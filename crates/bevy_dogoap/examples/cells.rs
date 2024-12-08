@@ -92,7 +92,7 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
     planner.always_plan = true; // Re-calculate our plan whenever we can
     planner.current_goal = Some(goal.clone());
 
-    let text_style = TextStyle {
+    let text_style = TextFont {
         font_size: 12.0,
         ..default()
     };
@@ -109,13 +109,10 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
         ))
         .with_children(|subcommands| {
             subcommands.spawn((
-                Text2dBundle {
-                    transform: Transform::from_translation(Vec3::new(10.0, -10.0, 10.0)),
-                    text: Text::from_section("", text_style.clone())
-                        .with_justify(JustifyText::Left),
-                    text_anchor: bevy::sprite::Anchor::TopLeft,
-                    ..default()
-                },
+                Transform::from_translation(Vec3::new(10.0, -10.0, 10.0)),
+                Text2d("".into()),
+                text_style,
+                bevy::sprite::Anchor::TopLeft,
                 StateDebugText,
             ));
         });
@@ -183,7 +180,7 @@ fn handle_move_to(
             Some(_) => {
                 if transform.translation.distance(destination) > 5.0 {
                     let direction = (destination - transform.translation).normalize();
-                    transform.translation += direction * cell.speed * time.delta_seconds();
+                    transform.translation += direction * cell.speed * time.delta_secs();
                 } else {
                     commands.entity(entity).remove::<MoveTo>();
                     // commands.entity(destination_entity).remove::<BusyObject>();
@@ -293,7 +290,7 @@ fn handle_replicate_action(
                     timers.remove(&entity);
                     planner.always_plan = true;
                 } else {
-                    hunger.0 += 6.0 * time.delta_seconds_f64();
+                    hunger.0 += 6.0 * time.delta_secs_f64();
                 }
             }
             None => {
@@ -364,7 +361,7 @@ fn over_time_needs_change(
     for (entity, mut hunger, transform) in query.iter_mut() {
         // Increase hunger
         let r = rng.gen_range(10.0..20.0);
-        let val: f64 = r * time.delta_seconds_f64();
+        let val: f64 = r * time.delta_secs_f64();
         hunger.0 += val;
         if hunger.0 > 100.0 {
             // hunger.0 = 100.0;
@@ -388,7 +385,8 @@ fn print_current_local_state(
         Option<&GoToFoodAction>,
         Option<&ReplicateAction>,
     )>,
-    mut q_child: Query<&mut Text, With<StateDebugText>>,
+    q_child: Query<Entity, With<StateDebugText>>,
+    mut text_writer: Text2dWriter,
 ) {
     // let planner = query.get_single().unwrap();
     for (entity, cell, hunger, children) in query.iter() {
@@ -416,8 +414,8 @@ fn print_current_local_state(
         }
 
         for &child in children.iter() {
-            let mut text = q_child.get_mut(child).unwrap();
-            text.sections[0].value =
+            let text = q_child.get(child).unwrap();
+            *text_writer.text(text, 0) =
                 format!("{current_action}\nAge: {age}\nHunger: {hunger:.0}\nEntity: {entity}");
         }
     }
@@ -433,7 +431,6 @@ fn draw_gizmos(
     gizmos
         .grid_2d(
             Vec2::ZERO,
-            0.0,
             UVec2::new(16, 9),
             Vec2::new(80., 80.),
             // Dark gray

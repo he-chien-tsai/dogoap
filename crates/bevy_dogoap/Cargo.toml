@@ -18,6 +18,7 @@ bevy = { version = "0.15", default-features = false, optional = false, features 
     "multi_threaded",
     "default_font",
     "webgl2",
+    "bevy_window",
 ] }
 bevy-trait-query = { version = "0.7.0" }
 dogoap = { path = "../dogoap", version = "0.3.0" }
