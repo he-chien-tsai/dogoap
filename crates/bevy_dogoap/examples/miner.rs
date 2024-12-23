@@ -204,7 +204,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
         // Set current goal to be to acquire gold
         planner.current_goal = Some(gold_goal.clone());
 
-        let text_style = TextStyle {
+        let text_style = TextFont {
             font_size: 18.0,
             ..default()
         };
@@ -220,13 +220,10 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
             ))
             .with_children(|subcommands| {
                 subcommands.spawn((
-                    Text2dBundle {
-                        transform: Transform::from_translation(Vec3::new(10.0, -10.0, 10.0)),
-                        text: Text::from_section("", text_style.clone())
-                            .with_justify(JustifyText::Left),
-                        text_anchor: bevy::sprite::Anchor::TopLeft,
-                        ..default()
-                    },
+                    Transform::from_translation(Vec3::new(10.0, -10.0, 10.0)),
+                    Text2d("".into()),
+                    text_style,
+                    bevy::sprite::Anchor::TopLeft,
                     NeedsText,
                 ));
             });
@@ -364,7 +361,7 @@ fn handle_go_to_house_action(
 
         go_to_location::<GoToHouseAction>(
             &mut at_location,
-            time.delta_seconds(),
+            time.delta_secs(),
             &mut t_entity,
             t_house.translation,
             Location::House,
@@ -390,7 +387,7 @@ fn handle_go_to_smelter_action(
 
         go_to_location::<GoToSmelterAction>(
             &mut at_location,
-            time.delta_seconds(),
+            time.delta_secs(),
             &mut t_entity,
             t_smelter.translation,
             Location::Smelter,
@@ -417,7 +414,7 @@ fn handle_go_to_outside_action(
 
         go_to_location::<GoToOutsideAction>(
             &mut at_location,
-            time.delta_seconds(),
+            time.delta_secs(),
             &mut t_entity,
             new_pos,
             Location::Outside,
@@ -443,7 +440,7 @@ fn handle_go_to_merchant_action(
 
         go_to_location::<GoToMerchantAction>(
             &mut at_location,
-            time.delta_seconds(),
+            time.delta_secs(),
             &mut t_entity,
             t_destination.translation,
             Location::Merchant,
@@ -474,7 +471,7 @@ fn handle_go_to_mushroom_action(
 
         go_to_location::<GoToMushroomAction>(
             &mut at_location,
-            time.delta_seconds(),
+            time.delta_secs(),
             &mut t_entity,
             mushroom.1,
             Location::Mushroom,
@@ -503,7 +500,7 @@ fn handle_go_to_ore_action(
 
         go_to_location::<GoToOreAction>(
             &mut at_location,
-            time.delta_seconds(),
+            time.delta_secs(),
             &mut t_entity,
             closest.1,
             Location::Ore,
@@ -581,7 +578,7 @@ fn handle_sleep_action(
         planner.always_plan = false;
 
         let r = rng.gen_range(5.0..20.0);
-        let val: f64 = r * time.delta_seconds_f64();
+        let val: f64 = r * time.delta_secs_f64();
         energy.0 += val;
         if energy.0 >= 100.0 {
             commands.entity(entity).remove::<SleepAction>();
@@ -670,7 +667,7 @@ fn handle_mine_ore_action(
 
                     // Mining consumes energy!
                     let r = rng.gen_range(5.0..10.0);
-                    let val: f64 = r * time.delta_seconds_f64();
+                    let val: f64 = r * time.delta_secs_f64();
                     energy.0 -= val;
                     // If we're running out of energy before finishing, stop mining for now
                     if energy.0 <= 0.0 {
@@ -726,7 +723,7 @@ fn handle_smelt_ore_action(
                 let mut rng = rand::thread_rng();
                 // Smelting consumes even more energy!
                 let r = rng.gen_range(10.0..15.0);
-                let val: f64 = r * time.delta_seconds_f64();
+                let val: f64 = r * time.delta_secs_f64();
                 energy.0 -= val;
                 if energy.0 <= 0.0 {
                     commands.entity(entity).remove::<SmeltOreAction>();
@@ -778,7 +775,7 @@ fn over_time_needs_change(time: Res<Time>, mut query: Query<(&mut Hunger, &mut E
     for (mut hunger, mut energy) in query.iter_mut() {
         // Increase hunger
         let r = rng.gen_range(10.0..20.0);
-        let val: f64 = r * time.delta_seconds_f64();
+        let val: f64 = r * time.delta_secs_f64();
         hunger.0 += val;
         if hunger.0 > 100.0 {
             hunger.0 = 100.0;
@@ -786,7 +783,7 @@ fn over_time_needs_change(time: Res<Time>, mut query: Query<(&mut Hunger, &mut E
 
         // Decrease energy
         let r = rng.gen_range(1.0..10.0);
-        let val: f64 = r * time.delta_seconds_f64();
+        let val: f64 = r * time.delta_secs_f64();
         energy.0 -= val;
         if energy.0 < 0.0 {
             energy.0 = 0.0;
@@ -818,7 +815,8 @@ fn print_current_local_state(
         Option<&GoToMerchantAction>,
     )>,
     // action_query: Query<&dyn ActionComponent>,
-    mut q_child: Query<&mut Text, With<NeedsText>>,
+    q_child: Query<Entity, With<NeedsText>>,
+    mut text_writer: Text2dWriter,
 ) {
     for (entity, hunger, energy, has_ore, has_metal, gold_amount, children) in query.iter() {
         let hunger = hunger.0;
@@ -888,10 +886,9 @@ fn print_current_local_state(
         }
 
         for &child in children.iter() {
-            let mut text = q_child.get_mut(child).unwrap();
-            text.sections[0].value = format!(
-                "{current_action}\nGold: {gold_amount}\nHunger: {hunger:.0}\nEnergy: {energy:.0}\nHas Ore? {has_ore}\nHas Metal? {has_metal}"
-            );
+            let text = q_child.get(child).unwrap();
+            *text_writer.text(text, 0) =
+                format!("{current_action}\nGold: {gold_amount}\nHunger: {hunger:.0}\nEnergy: {energy:.0}\nHas Ore? {has_ore}\nHas Metal? {has_metal}");
         }
     }
 }
@@ -909,7 +906,6 @@ fn draw_gizmos(
     gizmos
         .grid_2d(
             Vec2::ZERO,
-            0.0,
             UVec2::new(16, 9),
             Vec2::new(80., 80.),
             // Dark gray
@@ -923,14 +919,12 @@ fn draw_gizmos(
 
     gizmos.rect_2d(
         q_house.get_single().unwrap().translation.truncate(),
-        0.0,
         Vec2::new(40.0, 80.0),
         AQUAMARINE,
     );
 
     gizmos.rect_2d(
         q_smelter.get_single().unwrap().translation.truncate(),
-        0.0,
         Vec2::new(30.0, 30.0),
         YELLOW_GREEN,
     );

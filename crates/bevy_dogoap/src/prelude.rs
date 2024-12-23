@@ -1,5 +1,5 @@
 // TODO change to upstream once available
-pub use bevy_trait_query_0_14_0::RegisterExt;
+pub use bevy_trait_query::RegisterExt;
 
 pub use dogoap::prelude::{Action, Compare, Datum, Goal, LocalState, Mutator};
 
