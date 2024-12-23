@@ -276,7 +276,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
     }
 
     // Spawn a camera so we see something
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d::default());
 }
 
 // Spawn new mushrooms if there are less than 10
