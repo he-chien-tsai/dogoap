@@ -31,9 +31,9 @@ jobs:
       - name: Install nightly
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly-2024-07-30
+          toolchain: nightly-2024-12-21
           override: true
-          default: nightly-2024-07-30
+          default: nightly-2024-12-21
           components: rustfmt, clippy, rust-src
           target: wasm32-unknown-unknown
       - uses: Leafwing-Studios/cargo-cache@v2
