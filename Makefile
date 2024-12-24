@@ -45,3 +45,7 @@ test-coverage:
 .PHONY: wasm-examples
 wasm-examples:
 	./build-wasm-examples.sh
+
+.PHONY: bench
+bench:
+	cargo +nightly bench --features=bench

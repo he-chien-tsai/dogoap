@@ -1,4 +1,4 @@
-#![feature(test)]
+#![cfg_attr(feature = "bench", feature(test))]
 
 #[cfg(test)]
 mod tests {
@@ -7,7 +7,9 @@ mod tests {
         simple::{simple_decrement_action, simple_increment_action},
     };
 
+    #[cfg(feature = "bench")]
     extern crate test;
+    #[cfg(feature = "bench")]
     use test::Bencher;
 
     fn long_plan(strategy: PlanningStrategy) {
@@ -50,6 +52,7 @@ mod tests {
         assert_eq!(expected_state, effects.last().unwrap().state);
     }
 
+    #[cfg(feature = "bench")]
     #[bench]
     fn bench_start_to_goal_strategy(b: &mut Bencher) {
         b.iter(|| long_plan(PlanningStrategy::StartToGoal));

@@ -10,3 +10,8 @@ homepage = "https://github.com/victorb/dogoap"
 bevy_reflect = "0.15.0"
 log = "0.4.22"
 pathfinding = "4.10.0"
+
+
+[features]
+# Define a feature for nightly usage
+bench = []
