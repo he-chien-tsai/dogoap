@@ -33,7 +33,12 @@ Customer->Customer: DrinkLemonade
 
 use std::collections::{HashMap, VecDeque};
 
-use bevy::{color::palettes::css::*, prelude::*};
+use bevy::{
+    color::palettes::css::*,
+    prelude::*,
+    prelude::Camera2d,
+    window::{Window, WindowPlugin},
+};
 use bevy_dogoap::prelude::*;
 
 fn main() {
@@ -402,7 +407,7 @@ fn setup(mut commands: Commands) {
             ));
         });
 
-    commands.spawn(Camera2d::default());
+    commands.spawn(Camera2d);
 }
 
 fn handle_call_worker_to_empty_order_desk(
@@ -686,7 +691,7 @@ fn draw_state_debug(
         }
 
         // Render it out
-        for &child in children.iter() {
+        for child in children.iter() {
             let text = q_child.get(child).unwrap();
             *text_writer.text(text, 0) =
                 format!("{name}\n{current_action}\nEntity: {entity}\n---\n{state}");

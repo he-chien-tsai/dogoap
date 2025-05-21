@@ -1,4 +1,10 @@
-use bevy::{color::palettes::css::*, prelude::*, time::common_conditions::on_timer};
+use bevy::{
+    color::palettes::css::*,
+    prelude::*,
+    prelude::Camera2d,
+    time::common_conditions::on_timer,
+    window::{Window, WindowPlugin},
+};
 use bevy_dogoap::prelude::*;
 use rand::Rng;
 use std::{collections::HashMap, time::Duration};
@@ -276,7 +282,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
     }
 
     // Spawn a camera so we see something
-    commands.spawn(Camera2d::default());
+    commands.spawn(Camera2d);
 }
 
 // Spawn new mushrooms if there are less than 10
@@ -885,7 +891,7 @@ fn print_current_local_state(
             current_action = "Going to merchant";
         }
 
-        for &child in children.iter() {
+        for child in children.iter() {
             let text = q_child.get(child).unwrap();
             *text_writer.text(text, 0) =
                 format!("{current_action}\nGold: {gold_amount}\nHunger: {hunger:.0}\nEnergy: {energy:.0}\nHas Ore? {has_ore}\nHas Metal? {has_metal}");

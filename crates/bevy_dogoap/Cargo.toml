@@ -7,20 +7,42 @@ license = "MIT"
 homepage = "https://github.com/victorb/dogoap"
 
 [features]
-default = ["compute-pool"]
+default = ["compute-pool", "bevy_winit"]
 compute-pool = []
+bevy_winit = []
 
 [dependencies]
-bevy = { version = "0.15", default-features = false, optional = false, features = [
+bevy = { version = "0.16", default-features = false, optional = false, features = [
     "wayland",
     "bevy_gizmos",
     "bevy_text",
+    "bevy_log",
     "multi_threaded",
     "default_font",
     "webgl2",
     "bevy_window",
 ] }
-bevy-trait-query = { version = "0.7.0" }
+bevy-trait-query = { version = "0.16.0" }
 dogoap = { path = "../dogoap", version = "0.4.0" }
 dogoap_macros = { path = "../dogoap_macros", version = "0.4.0" }
 rand = "0.8.5"
+
+[[example]]
+name = "bevy_basic"
+path = "examples/bevy_basic.rs"
+required-features = ["bevy_winit"]
+
+[[example]]
+name = "cells"
+path = "examples/cells.rs"
+required-features = ["bevy_winit"]
+
+[[example]]
+name = "miner"
+path = "examples/miner.rs"
+required-features = ["bevy_winit"]
+
+[[example]]
+name = "resman"
+path = "examples/resman.rs"
+required-features = ["bevy_winit"]
