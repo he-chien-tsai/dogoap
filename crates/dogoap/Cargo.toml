@@ -7,7 +7,7 @@ license = "MIT"
 homepage = "https://github.com/victorb/dogoap"
 
 [dependencies]
-bevy_reflect = "0.15.0"
+bevy_reflect = "0.16"
 log = "0.4.22"
 pathfinding = "4.10.0"
 

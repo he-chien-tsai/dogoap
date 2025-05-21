@@ -1,4 +1,10 @@
-use bevy::{color::palettes::css::*, prelude::*, time::common_conditions::on_timer};
+use bevy::{
+    color::palettes::css::*,
+    prelude::*,
+    prelude::Camera2d,
+    time::common_conditions::on_timer,
+    window::{Window, WindowPlugin},
+};
 use bevy_dogoap::prelude::*;
 use rand::Rng;
 use std::{collections::HashMap, time::Duration};
@@ -142,7 +148,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
         ));
     }
     // Misc stuff we want somewhere
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 }
 
 fn spawn_random_food(
@@ -177,7 +183,7 @@ fn handle_move_to(
 
         // Check first if destination entity exists, otherwise cancel the MoveTo,
         match commands.get_entity(destination_entity) {
-            Some(_) => {
+            Ok(_) => {
                 if transform.translation.distance(destination) > 5.0 {
                     let direction = (destination - transform.translation).normalize();
                     transform.translation += direction * cell.speed * time.delta_secs();
@@ -186,7 +192,7 @@ fn handle_move_to(
                     // commands.entity(destination_entity).remove::<BusyObject>();
                 }
             }
-            None => {
+            Err(_) => {
                 // Cancel the MoveTo order as the destination no longer exists...
                 commands.entity(entity).remove::<MoveTo>();
             }
@@ -413,7 +419,7 @@ fn print_current_local_state(
             current_action = "Replicating";
         }
 
-        for &child in children.iter() {
+        for child in children.iter() {
             let text = q_child.get(child).unwrap();
             *text_writer.text(text, 0) =
                 format!("{current_action}\nAge: {age}\nHunger: {hunger:.0}\nEntity: {entity}");
