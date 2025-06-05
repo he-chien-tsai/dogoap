@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust-toolchain: [ "stable", "nightly-2024-12-21" ]
+        rust-toolchain: [ "stable", "nightly-2025-05-22" ]
     steps:
       - uses: actions/checkout@v4
 
