@@ -16,11 +16,11 @@ for EXAMPLE in "${EXAMPLES[@]}"; do
 
   time wasm-bindgen --out-name "$EXAMPLE" --no-typescript --out-dir web-src/wasm/examples --target web "target/wasm32-unknown-unknown/wasm-release/examples/$EXAMPLE.wasm"
 
-  time wasm-opt -all -Oz -ol 10 -s 10 -o "web-src/wasm/examples/${EXAMPLE}_bg.wasm" "web-src/wasm/examples/${EXAMPLE}_bg.wasm" 
+  # time wasm-opt -all -Oz -ol 10 -s 10 -o "web-src/wasm/examples/${EXAMPLE}_bg.wasm" "web-src/wasm/examples/${EXAMPLE}_bg.wasm"
 
-  time gzip -9 -c "web-src/wasm/examples/${EXAMPLE}_bg.wasm"  > "web-src/wasm/examples/${EXAMPLE}_bg.wasm.gz"
+  # time gzip -9 -c "web-src/wasm/examples/${EXAMPLE}_bg.wasm"  > "web-src/wasm/examples/${EXAMPLE}_bg.wasm.gz"
 
-  time brotli -9 -c "web-src/wasm/examples/${EXAMPLE}_bg.wasm" > "web-src/wasm/examples/${EXAMPLE}_bg.wasm.b"
+  # time brotli -9 -c "web-src/wasm/examples/${EXAMPLE}_bg.wasm" > "web-src/wasm/examples/${EXAMPLE}_bg.wasm.b"
 
   cp "crates/bevy_dogoap/examples/$EXAMPLE.rs" "web-src/sources/$EXAMPLE.rs"
 
