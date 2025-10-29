@@ -464,7 +464,7 @@ fn handle_go_to_order_desk(
 ) {
     for (entity, transform, _action, mut state, customer) in query.iter_mut() {
         let (t_order_desk, mut order_desk) = q_order_desks
-            .get_single_mut()
+            .single_mut()
             .expect("Only one order desk expected!");
 
         // Offset to the left for customer, to the right for worker
@@ -537,7 +537,7 @@ fn handle_place_order(
 ) {
     for (entity, mut customer, _action, mut placed_order) in query.iter_mut() {
         let mut order_desk = q_order_desks
-            .get_single_mut()
+            .single_mut()
             .expect("Only one order desk expected!");
         // Need to make sure the serving counter has a worker at it before we
         // can place an order

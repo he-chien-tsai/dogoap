@@ -253,16 +253,16 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
         Transform::from_translation(Vec3::new(-300.0, -50.0, 0.0)),
     ));
 
-    let window = windows.get_single().expect("Expected only one window! Wth");
+    let window = windows.single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     // Begin with three mushrooms our miner can eat
     for _i in 0..3 {
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         commands.spawn((
             Name::new("Mushroom"),
             Mushroom,
@@ -272,8 +272,8 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
 
     // Spawn 10 ores we can mine as well
     for _i in 0..10 {
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         commands.spawn((
             Name::new("Ore"),
             Ore,
@@ -292,13 +292,13 @@ fn spawn_random_mushroom(
     mushrooms: Query<Entity, With<Mushroom>>,
 ) {
     if mushrooms.iter().len() < 10 {
-        let window = windows.get_single().expect("Expected only one window! Wth");
+        let window = windows.single().expect("Expected only one window! Wth");
         let window_height = window.height() / 2.0;
         let window_width = window.width() / 2.0;
 
-        let mut rng = rand::thread_rng();
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let mut rng = rand::rng();
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         commands.spawn((
             Name::new("Mushroom"),
             Mushroom,
@@ -314,13 +314,13 @@ fn spawn_random_ore(
     ores: Query<Entity, With<Ore>>,
 ) {
     if ores.iter().len() < 10 {
-        let window = windows.get_single().expect("Expected only one window! Wth");
+        let window = windows.single().expect("Expected only one window! Wth");
         let window_height = window.height() / 2.0;
         let window_width = window.width() / 2.0;
 
-        let mut rng = rand::thread_rng();
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let mut rng = rand::rng();
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         commands.spawn((
             Name::new("Ore"),
             Ore,
@@ -362,7 +362,7 @@ fn handle_go_to_house_action(
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
         let t_house = q_house
-            .get_single()
+            .single()
             .expect("There should only be one house!");
 
         go_to_location::<GoToHouseAction>(
@@ -388,7 +388,7 @@ fn handle_go_to_smelter_action(
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
         let t_smelter = q_smelter
-            .get_single()
+            .single()
             .expect("There should only be one smelter!");
 
         go_to_location::<GoToSmelterAction>(
@@ -411,7 +411,7 @@ fn handle_go_to_outside_action(
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
         let t_house = q_house
-            .get_single()
+            .single()
             .expect("There should only be one house!");
 
         // Outside is slightly to the left of the house... Fight me
@@ -441,7 +441,7 @@ fn handle_go_to_merchant_action(
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
         let t_destination = q_destination
-            .get_single()
+            .single()
             .expect("There should only be one merchant!");
 
         go_to_location::<GoToMerchantAction>(
@@ -578,12 +578,12 @@ fn handle_sleep_action(
     mut commands: Commands,
     mut query: Query<(Entity, &SleepAction, &mut Energy, &mut Planner)>,
 ) {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     for (entity, _action, mut energy, mut planner) in query.iter_mut() {
         // Stop planning while we sleep, so we regain all the energy we can
         planner.always_plan = false;
 
-        let r = rng.gen_range(5.0..20.0);
+        let r = rng.random_range(5.0..20.0);
         let val: f64 = r * time.delta_secs_f64();
         energy.0 += val;
         if energy.0 >= 100.0 {
@@ -669,10 +669,10 @@ fn handle_mine_ore_action(
                     commands.entity(entity).remove::<MineOreAction>();
                     commands.entity(closest.0).despawn_recursive();
                 } else {
-                    let mut rng = rand::thread_rng();
+                    let mut rng = rand::rng();
 
                     // Mining consumes energy!
-                    let r = rng.gen_range(5.0..10.0);
+                    let r = rng.random_range(5.0..10.0);
                     let val: f64 = r * time.delta_secs_f64();
                     energy.0 -= val;
                     // If we're running out of energy before finishing, stop mining for now
@@ -726,9 +726,9 @@ fn handle_smelt_ore_action(
 
                 commands.entity(entity).remove::<SmeltOreAction>();
             } else {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 // Smelting consumes even more energy!
-                let r = rng.gen_range(10.0..15.0);
+                let r = rng.random_range(10.0..15.0);
                 let val: f64 = r * time.delta_secs_f64();
                 energy.0 -= val;
                 if energy.0 <= 0.0 {
@@ -777,10 +777,10 @@ fn handle_sell_metal_action(
 
 // Increases hunger and decreases energy over time
 fn over_time_needs_change(time: Res<Time>, mut query: Query<(&mut Hunger, &mut Energy)>) {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     for (mut hunger, mut energy) in query.iter_mut() {
         // Increase hunger
-        let r = rng.gen_range(10.0..20.0);
+        let r = rng.random_range(10.0..20.0);
         let val: f64 = r * time.delta_secs_f64();
         hunger.0 += val;
         if hunger.0 > 100.0 {
@@ -788,7 +788,7 @@ fn over_time_needs_change(time: Res<Time>, mut query: Query<(&mut Hunger, &mut E
         }
 
         // Decrease energy
-        let r = rng.gen_range(1.0..10.0);
+        let r = rng.random_range(1.0..10.0);
         let val: f64 = r * time.delta_secs_f64();
         energy.0 -= val;
         if energy.0 < 0.0 {
@@ -924,19 +924,19 @@ fn draw_gizmos(
     }
 
     gizmos.rect_2d(
-        q_house.get_single().unwrap().translation.truncate(),
+        q_house.single().unwrap().translation.truncate(),
         Vec2::new(40.0, 80.0),
         AQUAMARINE,
     );
 
     gizmos.rect_2d(
-        q_smelter.get_single().unwrap().translation.truncate(),
+        q_smelter.single().unwrap().translation.truncate(),
         Vec2::new(30.0, 30.0),
         YELLOW_GREEN,
     );
 
     gizmos.circle_2d(
-        q_merchant.get_single().unwrap().translation.truncate(),
+        q_merchant.single().unwrap().translation.truncate(),
         16.,
         GOLD,
     );

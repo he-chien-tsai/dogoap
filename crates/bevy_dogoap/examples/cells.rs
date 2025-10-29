@@ -81,8 +81,8 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
         .add_mutator(Hunger::increase(1.0))
         .set_cost(2);
 
-    let mut rng = rand::thread_rng();
-    let starting_hunger = rng.gen_range(20.0..45.0);
+    let mut rng = rand::rng();
+    let starting_hunger = rng.random_range(20.0..45.0);
 
     let (mut planner, components) = create_planner!({
         actions: [
@@ -125,22 +125,22 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
 }
 
 fn startup(mut commands: Commands, windows: Query<&Window>) {
-    let window = windows.get_single().expect("Expected only one window! Wth");
+    let window = windows.single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     for _i in 0..1 {
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         spawn_cell(&mut commands, Vec3::from_array([x, y, 1.0]), 128.0);
     }
 
     // Begin with three food
     for _i in 0..30 {
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         commands.spawn((
             Name::new("Food"),
             Food,
@@ -156,14 +156,14 @@ fn spawn_random_food(
     mut commands: Commands,
     q_food: Query<Entity, With<Food>>,
 ) {
-    let window = windows.get_single().expect("Expected only one window! Wth");
+    let window = windows.single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
     if q_food.iter().len() < 100 {
-        let mut rng = rand::thread_rng();
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let mut rng = rand::rng();
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         commands.spawn((
             Name::new("Food"),
             Food,
@@ -363,10 +363,10 @@ fn over_time_needs_change(
     time: Res<Time>,
     mut query: Query<(Entity, &mut Hunger, &Transform)>,
 ) {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     for (entity, mut hunger, transform) in query.iter_mut() {
         // Increase hunger
-        let r = rng.gen_range(10.0..20.0);
+        let r = rng.random_range(10.0..20.0);
         let val: f64 = r * time.delta_secs_f64();
         hunger.0 += val;
         if hunger.0 > 100.0 {
@@ -394,7 +394,7 @@ fn print_current_local_state(
     q_child: Query<Entity, With<StateDebugText>>,
     mut text_writer: Text2dWriter,
 ) {
-    // let planner = query.get_single().unwrap();
+    // let planner = query.single().unwrap();
     for (entity, cell, hunger, children) in query.iter() {
         let age = cell.age;
         let hunger = hunger.0;
