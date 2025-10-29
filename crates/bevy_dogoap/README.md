@@ -96,6 +96,7 @@ With this example, it should take about 2-3 frames until IsHungry is now set to 
 
 | bevy | bevy_dogoap |
 | ---- | ----------- |
+| 0.17 | 0.6.0       |
 | 0.16 | 0.5.0       |
 | 0.15 | 0.4.0       |
 | 0.14 | 0.3.0       |
