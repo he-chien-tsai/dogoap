@@ -1,13 +1,13 @@
-// This is a really basic example of how to use dogoap with bevy_dogoap for use in Bevy
-// It sets up two states on a entity, is_hungry and is_tired
-// Then it sets up two possible actions:
-// - SleepAction, which sets is_tired to false
-// - EatAction, which requires is_tired to be false, and sets is_hungry to true
-
-// We run three app.update() instead of app.run(), then print the final state after
-// those three updates, so there is some sort of end to it all...
-
-// Final state should be that is_hungry is false, and is_tired is false
+//! This is a really basic example of how to use dogoap with `bevy_dogoap` for use in Bevy
+//! It sets up two states on a entity, `is_hungry` and `is_tired`
+//! Then it sets up two possible actions:
+//! - `SleepAction`, which sets `is_tired` to false
+//! - `EatAction`, which requires `is_tired` to be false, and sets `is_hungry` to true
+//!
+//! We run three `app.update()` instead of `app.run()`, then print the final state after
+//! those three updates, so there is some sort of end to it all...
+//!
+//! Final state should be that `is_hungry` is false, and `is_tired` is false
 
 use bevy::{log::LogPlugin, prelude::*};
 

@@ -1,3 +1,5 @@
+//! Benchmark for the `long_plan` example.
+
 use criterion::{criterion_group, criterion_main, Criterion};
 use dogoap::{
     prelude::*,

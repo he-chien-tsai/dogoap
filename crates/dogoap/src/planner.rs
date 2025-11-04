@@ -14,11 +14,14 @@ use bevy_reflect::Reflect;
 /// the [`Effect`]
 #[derive(Reflect, Clone, Eq, PartialEq, Hash)]
 pub enum Node {
-    Effect(Effect),
+    /// The initial state of the planner
     State(LocalState),
+    /// The state after applying an [`Effect`]
+    Effect(Effect),
 }
 
 impl Node {
+    /// Returns the state of the node
     pub fn state(&self) -> &LocalState {
         match self {
             Node::Effect(effect) => &effect.state,

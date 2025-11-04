@@ -1,3 +1,5 @@
+//! Everything you need to to use `bevy_dogoap`
+
 // TODO change to upstream once available
 pub use bevy_trait_query::RegisterExt;
 

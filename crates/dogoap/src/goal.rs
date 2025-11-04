@@ -30,17 +30,20 @@ impl Default for Goal {
 }
 
 impl Goal {
+    /// Create a new empty goal
     pub fn new() -> Self {
         Self {
             requirements: BTreeMap::new(),
         }
     }
 
+    /// Create a new goal with a single requirements
     pub fn with_req(mut self, key: &str, compare: Compare) -> Self {
         self.requirements.insert(key.to_string(), compare);
         self
     }
 
+    /// Create a new goal from a list of requirements
     pub fn from_reqs(preconditions: &[(String, Compare)]) -> Goal {
         let mut goal = Goal::new();
         for (k, v) in preconditions {

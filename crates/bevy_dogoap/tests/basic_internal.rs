@@ -1,3 +1,5 @@
+//! Tests the basics using the internal API
+
 use bevy::prelude::*;
 use bevy_dogoap::prelude::*;
 use dogoap::simple::simple_action;

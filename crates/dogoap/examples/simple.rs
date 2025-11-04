@@ -1,7 +1,7 @@
-use dogoap::prelude::*;
+//! This example is the same as examples/basic.rs but using the various `simple_*`
+//! functions to create the data structures instead
 
-// This example is the same as examples/basic.rs but using the various `simple_*`
-// functions to create the data structures instead
+use dogoap::prelude::*;
 
 fn main() {
     let start = LocalState::new().with_datum("is_hungry", Datum::Bool(true));

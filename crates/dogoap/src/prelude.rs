@@ -1,4 +1,5 @@
-// crate "dogoap" src/prelude.rs
+//! Everything you need to use dogoap
+
 pub use crate::action::Action;
 pub use crate::compare::Compare;
 pub use crate::datum::Datum;

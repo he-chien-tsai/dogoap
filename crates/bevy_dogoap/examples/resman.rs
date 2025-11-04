@@ -1,35 +1,33 @@
-// A little restuarant manager
-
-// Customer > Has Thirst that they want to fullfil
-// Worker > Wants to fulfill orders to increase profits of business
-
-// High-level, we have the following:
-
-// Agent - Shared behaviour between Customer and Worker
-// Customer - Has Thirst, wants to satisfy it somehow
-// Worker - Wants to increase income of business
-
-// Customer has Actions:
-// - GoToServingDesk, MakeOrder, ConsumeOrder, ConsumeInventory
-
-// Worker has Actions:
-// - GoToServingDesk, TakeOrder, MakeProduct, MoveProduct, HandOverOrder
-
-/* Sequence Diagram for the full flow of actions (paste into https://sequencediagram.org/)
-
-Customer->Order Desk: GoToOrderDesk
-Order Desk->Worker: RequestWorker
-Worker->Order Desk: GoToOrderDesk
-Customer->Order Desk: PlaceOrder
-Worker->Order Desk: TakeOrder
-Customer->Order Desk: WaitForOrder
-Worker->Lemonade Maker: GoToLemonadeMaker
-Lemonade Maker->Worker: MakeLemonade
-Worker->Order Desk: FinishOrder
-Customer->Order Desk: PickupLemonade
-Customer->Customer: DrinkLemonade
-
-*/
+//! A little restaurant manager
+//!
+//! Customer > Has Thirst that they want to fullfil
+//! Worker > Wants to fulfill orders to increase profits of business
+//!
+//! High-level, we have the following:
+//!
+//! Agent - Shared behaviour between Customer and Worker
+//! Customer - Has Thirst, wants to satisfy it somehow
+//! Worker - Wants to increase income of business
+//!
+//! Customer has Actions:
+//! - `GoToServingDesk`, `MakeOrder`, `ConsumeOrder`, `ConsumeInventory`
+//!
+//! Worker has Actions:
+//! - `GoToServingDesk`, `TakeOrder`, `MakeProduct`, `MoveProduct`, `HandOverOrder`
+//!
+//! Sequence Diagram for the full flow of actions (paste into <https://sequencediagram.org/)>:
+//!
+//! Customer->Order Desk: `GoToOrderDesk`
+//! Order Desk->Worker: `RequestWorker`
+//! Worker->Order Desk: `GoToOrderDesk`
+//! Customer->Order Desk: `PlaceOrder`
+//! Worker->Order Desk: `TakeOrder`
+//! Customer->Order Desk: `WaitForOrder`
+//! Worker->Lemonade Maker: `GoToLemonadeMaker`
+//! Lemonade Maker->Worker: `MakeLemonade`
+//! Worker->Order Desk: `FinishOrder`
+//! Customer->Order Desk: `PickupLemonade`
+//! Customer->Customer: `DrinkLemonade`
 
 use std::collections::{HashMap, VecDeque};
 

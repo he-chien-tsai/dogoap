@@ -1,3 +1,5 @@
+//! This example shows how a plan with lots of steps can be created.
+
 use dogoap::{
     prelude::*,
     simple::{simple_decrement_action, simple_increment_action},

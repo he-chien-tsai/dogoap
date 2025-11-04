@@ -6,8 +6,11 @@ use bevy_reflect::*;
 /// the String key + a [`Datum`]
 #[derive(Reflect, Clone, Debug, PartialEq, Hash, Eq)]
 pub enum Mutator {
-    Set(String, Datum),       // :key, :value
+    /// Set a value for a key
+    Set(String, Datum), // :key, :value
+    /// Increment a value for a key by a given amount
     Increment(String, Datum), // :key, :increment-by
+    /// Decrement a value for a key by a given amount
     Decrement(String, Datum), // :key, :decrement-by
 }
 

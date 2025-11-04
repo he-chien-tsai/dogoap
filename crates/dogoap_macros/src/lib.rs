@@ -1,3 +1,5 @@
+//! Macros used by the `dogoap` crate
+
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
@@ -29,6 +31,7 @@ pub fn action_component_derive(input: TokenStream) -> TokenStream {
     gen.into()
 }
 
+/// Implements `#[derive(DatumComponent)]`
 #[proc_macro_derive(DatumComponent)]
 pub fn datum_component_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);

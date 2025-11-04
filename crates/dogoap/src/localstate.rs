@@ -29,12 +29,14 @@ pub struct LocalState {
 }
 
 impl LocalState {
+    /// Create a new empty local state
     pub fn new() -> Self {
         Self {
             data: InternalData::new(),
         }
     }
 
+    /// Create a new local state with a single datum
     pub fn with_datum(mut self, key: &str, value: Datum) -> Self {
         self.data.insert(key.to_string(), value);
         self

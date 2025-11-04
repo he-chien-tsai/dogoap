@@ -1,3 +1,5 @@
+//! This is a basic example on how you can use Dogoap while moving your agent around
+
 use bevy::{
     color::palettes::css::*,
     prelude::Camera2d,
@@ -8,8 +10,6 @@ use bevy::{
 use bevy_dogoap::prelude::*;
 use rand::Rng;
 use std::{collections::HashMap, time::Duration};
-
-// This is a basic example on how you can use Dogoap while moving your agent around
 
 /// This is our marker components, so we can keep track of the various in-game entities
 #[derive(Component)]

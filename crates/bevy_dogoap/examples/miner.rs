@@ -1,3 +1,18 @@
+//! A more involved example that resembles a simulation of sorts.
+//! The simulation is of a miner, who wants to earn 3 gold
+//! In order to get gold, they need to sell metal at the Merchant
+//! And in order to get metal, the miner needs to smelt some ore
+//! And in order to get ore, the miner needs to go out, find ore and mine it
+//! And besides those requirements, the miner also have hunger and energy
+//! that constantly change, and they need to sleep and eat in order
+//! to satisfy those needs.
+//!
+//! Put another way, the miner has to:
+//! Eat and Sleep every now and then
+//! Mine to get Ore
+//! Smelt Ore to get Metal
+//! Sell Metal to get Gold
+
 use bevy::{
     color::palettes::css::*,
     prelude::Camera2d,
@@ -8,21 +23,6 @@ use bevy::{
 use bevy_dogoap::prelude::*;
 use rand::Rng;
 use std::{collections::HashMap, time::Duration};
-
-// A more involved example that resembles a simulation of sorts.
-// The simulation is of a miner, who wants to earn 3 gold
-// In order to get gold, they need to sell metal at the Merchant
-// And in order to get metal, the miner needs to smelt some ore
-// And in order to get ore, the miner needs to go out, find ore and mine it
-// And besides those requirements, the miner also have hunger and energy
-// that constantly change, and they need to sleep and eat in order
-// to satisfy those needs.
-
-// Put another way, the miner has to:
-// Eat and Sleep every now and then
-// Mine to get Ore
-// Smelt Ore to get Metal
-// Sell Metal to get Gold
 
 #[derive(Clone, Default, Reflect, Copy, EnumDatum)]
 enum Location {

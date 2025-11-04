@@ -1,3 +1,5 @@
+//! Integration tests
+
 use dogoap::{
     prelude::*,
     simple::{

@@ -1,8 +1,8 @@
-use dogoap::prelude::*;
+//! This example shows the most basic use of dogoap
+//! It's a bit overly verbose (check examples/simple.rs for a "not as verbose" example)
+//! but shows the data structures needed for the planner
 
-// This example shows the most basic use of dogoap
-// It's a bit overly verbose (check examples/simple.rs for a "not as verbose" example)
-// but shows the data structures needed for the planner
+use dogoap::prelude::*;
 
 fn main() {
     let start = LocalState::new().with_datum("is_hungry", Datum::Bool(true));

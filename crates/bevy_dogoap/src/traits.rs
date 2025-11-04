@@ -1,3 +1,5 @@
+//! Traits used by `bevy_dogoap`. The types here are typically implemented via `#[derive(...)]`.
+
 use std::fmt;
 
 use crate::prelude::*;
@@ -103,7 +105,7 @@ pub trait EnumDatum: Send + Sync {
     fn datum(self) -> Datum;
 }
 
-// Implemented by derive DatumComponent
+/// Internal trait implemented by `#[derive(DatumComponent)]`
 pub trait Precondition<T> {
     fn is(val: T) -> (String, Compare);
     fn is_not(val: T) -> (String, Compare);
@@ -111,7 +113,7 @@ pub trait Precondition<T> {
     fn is_less(val: T) -> (String, Compare);
 }
 
-// Implemented by derive DatumComponent in order to mutate
+/// Internal trait implemented by `#[derive(DatumComponent)]` in order to mutate
 pub trait MutatorTrait<T> {
     fn set(val: T) -> Mutator;
     fn increase(val: T) -> Mutator;

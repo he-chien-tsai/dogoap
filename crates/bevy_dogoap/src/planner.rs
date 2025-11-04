@@ -32,7 +32,7 @@ pub struct Planner {
     /// What [`Action`] we're currrently trying to execute
     pub current_action: Option<Action>,
 
-    // queue of action keys, first is current
+    /// queue of action keys, first is current
     pub current_plan: VecDeque<String>,
 
     // TODO figure out how to get reflect to work, if possible
@@ -82,11 +82,11 @@ pub struct ComputePlan(Task<Option<(Vec<Node>, usize)>>);
 pub struct IsPlanning;
 
 impl Planner {
+    /// Creates a new [`Planner`] from the given components, goals, and actions map.
     pub fn new(components: DatumComponents, goals: Vec<Goal>, actions_map: ActionsMap) -> Self {
         let mut actions_for_dogoap: Vec<Action> = vec![];
-        // let mut actions_map: ActionsMap = HashMap::new();
 
-        for (_key, (action, _component)) in actions_map.iter() {
+        for (action, _component) in actions_map.values() {
             actions_for_dogoap.push(action.clone());
         }
 
