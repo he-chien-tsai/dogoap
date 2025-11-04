@@ -347,7 +347,7 @@ fn handle_eat_action(
 }
 
 fn print_cell_count(query: Query<Entity, With<Cell>>) {
-    println!("Active Cells: {}", query.iter().len());
+    info!("Active Cells: {}", query.iter().len());
 }
 
 fn over_time_needs_change(
@@ -370,7 +370,7 @@ fn over_time_needs_change(
                 Transform::from_translation(translation),
                 GlobalTransform::from_translation(translation),
             ));
-            println!("Removed starving Cell");
+            info!("Removed starving Cell");
         }
     }
 }

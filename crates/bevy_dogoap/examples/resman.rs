@@ -520,7 +520,7 @@ fn handle_place_order(
             match progresses.get_mut(&entity) {
                 Some(progress) => {
                     if progress.tick(time.delta()).just_finished() {
-                        println!("PlaceOrder complete!");
+                        info!("PlaceOrder complete!");
                         // Produce Order with one Lemonade, assign to OrderDesk
                         let new_order = Order {
                             items_to_produce: VecDeque::from([Item::Lemonade]),
@@ -535,7 +535,7 @@ fn handle_place_order(
                         placed_order.0 = true;
                     } else {
                         // In progress...
-                        println!("PlaceOrder Progress: {}", progress.fraction());
+                        info!("PlaceOrder Progress: {}", progress.fraction());
                     }
                 }
                 None => {
@@ -580,7 +580,7 @@ fn handle_pickup_lemonade(
                     progresses.remove(&entity);
                 } else {
                     // In progress...
-                    println!("Pickup Progress: {}", progress.fraction());
+                    info!("Pickup Progress: {}", progress.fraction());
                 }
             }
             None => {
@@ -607,7 +607,7 @@ fn handle_drink_lemonade(
                 } else {
                     // In progress...
                     thirst.0 = (thirst.0 - 0.05).max(0.0);
-                    println!("Drink Progress: {}", progress.fraction());
+                    info!("Drink Progress: {}", progress.fraction());
                 }
             }
             None => {

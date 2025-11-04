@@ -546,7 +546,7 @@ fn handle_eat_action(
         let Some(mushroom) = find_closest(origin, items) else {
             panic!("No mushroom could be found, HOW?!")
         };
-        println!("Eating mushroom we found at {mushroom:?}");
+        info!("Eating mushroom we found at {mushroom:?}");
 
         hunger.0 -= 50.0;
 

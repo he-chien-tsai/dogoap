@@ -26,6 +26,6 @@ fn main() {
 
     print_plan(plan.unwrap());
 
-    println!();
-    println!("[Everything went as expected!]");
+    info!();
+    info!("[Everything went as expected!]");
 }

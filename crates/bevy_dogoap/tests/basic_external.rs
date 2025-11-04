@@ -54,10 +54,10 @@ fn handle_eat_action(
     mut query: Query<(Entity, &EatAction, &mut IsHungry)>,
 ) {
     for (entity, _action, mut is_hungry) in query.iter_mut() {
-        println!("We're doing EatAction!");
+        info!("We're doing EatAction!");
         is_hungry.0 = false;
         commands.entity(entity).remove::<EatAction>();
-        println!("Removed EatAction from our Entity {entity}");
+        info!("Removed EatAction from our Entity {entity}");
     }
 }
 
@@ -66,10 +66,10 @@ fn handle_sleep_action(
     mut query: Query<(Entity, &SleepAction, &mut IsTired)>,
 ) {
     for (entity, _action, mut is_tired) in query.iter_mut() {
-        println!("We're doing SleepAction!");
+        info!("We're doing SleepAction!");
         is_tired.0 = false;
         commands.entity(entity).remove::<SleepAction>();
-        println!("Removed SleepAction from our Entity {entity}");
+        info!("Removed SleepAction from our Entity {entity}");
     }
 }
 
@@ -144,13 +144,13 @@ mod test {
             app.update();
         }
 
-        println!("Final State:\n{:#?}", get_state(&mut app));
+        info!("Final State:\n{:#?}", get_state(&mut app));
 
         assert_key_is_bool(&mut app, "is_hungry", false, "is_hungry wasn't false");
         assert_key_is_bool(&mut app, "is_tired", false, "is_tired wasn't false");
         assert_component_not_exists::<EatAction>(&mut app);
         assert_component_not_exists::<SleepAction>(&mut app);
 
-        println!("Final State:\n{:#?}", get_state(&mut app));
+        info!("Final State:\n{:#?}", get_state(&mut app));
     }
 }

@@ -151,23 +151,23 @@ pub fn print_plan(plan: (Vec<Node>, usize)) {
     for node in nodes {
         match node {
             Node::Effect(effect) => {
-                println!("\t\t= DO ACTION {:#?}", effect.action);
-                println!("\t\tMUTATES:");
+                info!("\t\t= DO ACTION {:#?}", effect.action);
+                info!("\t\tMUTATES:");
                 print_mutators(effect.mutators);
                 last_state = effect.state.clone();
             }
             Node::State(s) => {
-                println!("\t\t= INITIAL STATE");
+                info!("\t\t= INITIAL STATE");
                 for (k, v) in &s.data {
-                    println!("\t\t{k} = {v}");
+                    info!("\t\t{k} = {v}");
                 }
                 last_state = s.clone();
             }
         }
-        println!("\n\t\t---\n");
+        info!("\n\t\t---\n");
     }
-    println!("\t\t= FINAL STATE (COST: {cost})");
+    info!("\t\t= FINAL STATE (COST: {cost})");
     for (k, v) in &last_state.data {
-        println!("\t\t{k} = {v}");
+        info!("\t\t{k} = {v}");
     }
 }

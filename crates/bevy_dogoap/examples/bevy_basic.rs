@@ -114,6 +114,6 @@ fn main() {
     let planner = query.single(app.world()).unwrap();
 
     // This should confirm that is_hungry and is_tired have been set to `false`
-    println!("Final state in our planner:");
-    println!("{:#?}", planner.state);
+    info!("Final state in our planner:");
+    info!("{:#?}", planner.state);
 }
