@@ -194,8 +194,9 @@ mod test {
         app.finish();
         app.update();
 
+        // Spin until the planner is done planning
         loop {
-            std::thread::sleep(Duration::from_millis(200));
+            std::thread::sleep(Duration::from_millis(50));
             app.update();
             if app
                 .world_mut()
@@ -207,6 +208,7 @@ mod test {
                 break;
             }
         }
+        // Execute the plan
         for _ in 0..3 {
             app.update();
         }

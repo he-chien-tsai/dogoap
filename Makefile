@@ -7,7 +7,7 @@ check:
 
 .PHONY: test
 test:
-	cargo test --no-default-features
+	cargo test
 
 .PHONY: test-watch
 test-watch:
