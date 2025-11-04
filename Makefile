@@ -7,13 +7,12 @@ check:
 
 .PHONY: test
 test:
-	cargo test
+	cargo test --no-default-features
 
 .PHONY: test-watch
 test-watch:
 	cargo watch -s "make test"
 
-# TODO flaky as it doesn't always get the right state within 3 frames
 .PHONY: test-compute-pool
 test-compute-pool:
 	cargo test --features=compute-pool
