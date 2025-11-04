@@ -6,6 +6,7 @@ resolver = "2"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/victorb/dogoap"
+homepage = "https://victorb.github.io/dogoap/"
 keywords = ["goap", "ai"]
 categories = ["game-development"]
 

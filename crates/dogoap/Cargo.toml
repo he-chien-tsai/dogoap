@@ -5,6 +5,7 @@ description = "GOAP implemented in data-oriented way"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
+homepage = { workspace = true }
 keywords = { workspace = true }
 categories = { workspace = true }
 
