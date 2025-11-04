@@ -21,7 +21,7 @@ bevy_platform = { workspace = true }
 bevy_tasks = { workspace = true, optional = true }
 bevy-trait-query = { workspace = true }
 
-dogoap = { workspace = true }
+dogoap = { workspace = true, features = ["bevy_reflect"] }
 dogoap_macros = { workspace = true}
 rand = { workspace = true}
 crossbeam-channel = { workspace = true, optional = true}

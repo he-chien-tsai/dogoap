@@ -1,12 +1,12 @@
 use crate::{localstate::LocalState, mutator::Mutator};
-use bevy_reflect::Reflect;
 use std::hash::{Hash, Hasher};
 
 /// The effect is what happens when an Action is applied
 /// It's separated from Action in order to separate the
 /// data structures for the Planner's Node that is used
 /// for the pathfinding part.
-#[derive(Reflect, Clone, Debug, PartialEq, Eq, Default)]
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub struct Effect {
     pub action: String,
     pub mutators: Vec<Mutator>,

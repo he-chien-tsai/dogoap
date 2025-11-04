@@ -1,10 +1,9 @@
 use crate::{datum::Datum, localstate::InternalData};
 
-use bevy_reflect::*;
-
 /// Describes a change in [`LocalState`](crate::localstate::LocalState), based on
 /// the String key + a [`Datum`]
-#[derive(Reflect, Clone, Debug, PartialEq, Hash, Eq)]
+#[derive(Clone, Debug, PartialEq, Hash, Eq)]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub enum Mutator {
     /// Set a value for a key
     Set(String, Datum), // :key, :value

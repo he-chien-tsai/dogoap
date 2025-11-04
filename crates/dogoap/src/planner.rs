@@ -7,12 +7,11 @@ use crate::{
     mutator::{apply_mutator, serialize_mutators_pretty},
 };
 
-use bevy_reflect::Reflect;
-
 /// A Node holds things can return a state, used for path finding
 /// It's either the Initial [`LocalState`], or the [`LocalState`] after applying
 /// the [`Effect`]
-#[derive(Reflect, Clone, Eq, PartialEq, Hash)]
+#[derive(Clone, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub enum Node {
     /// The initial state of the planner
     State(LocalState),

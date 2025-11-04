@@ -1,13 +1,12 @@
 use std::collections::BTreeMap;
 use std::hash::{Hash, Hasher};
 
-use bevy_reflect::*;
-
 use crate::compare::Compare;
 
 /// Goal is a map of what we want our final [`LocalState`](crate::localstate::LocalState) to be, using String as
 /// keys and [`Compare`] to assert what we want the [`Datum`](crate::datum::Datum) to be
-#[derive(Reflect, Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub struct Goal {
     /// All the requirements needed to be met in order to consider us to be at our final state
     pub requirements: BTreeMap<String, Compare>,

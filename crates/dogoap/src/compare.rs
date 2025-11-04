@@ -1,10 +1,10 @@
 use crate::{action::Action, datum::Datum, localstate::LocalState};
-use bevy_reflect::Reflect;
 use std::hash::{Hash, Hasher};
 
 /// Allows you to Compare [`Datum`] between each other. Used for Preconditions
 /// and in path finding until we reach our goal.
-#[derive(Reflect, Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub enum Compare {
     Equals(Datum),
     NotEquals(Datum),

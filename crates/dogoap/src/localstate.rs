@@ -14,8 +14,6 @@ use std::collections::BTreeMap;
 // use indexmap::IndexMap; // 37,873.88 ns/iter
 // use micromap::Map; // 30,480.55 ns/iter
 
-use bevy_reflect::Reflect;
-
 use crate::datum::Datum;
 use crate::goal::Goal;
 
@@ -23,7 +21,8 @@ pub type InternalData = BTreeMap<String, Datum>;
 
 /// This is our internal state that the planner uses to progress in the path finding,
 /// until we reach our [`Goal`]
-#[derive(Reflect, Debug, Clone, Eq, PartialEq, Default)]
+#[derive(Debug, Clone, Eq, PartialEq, Default)]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub struct LocalState {
     pub data: InternalData,
 }

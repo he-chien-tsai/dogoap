@@ -2,10 +2,9 @@ use std::fmt::Display;
 use std::hash::Hash;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
-use bevy_reflect::Reflect;
-
 /// Represents one value of either `bool`, `i64`, `f64` or a `Enum` as `usize`.
-#[derive(Reflect, Clone, Debug, PartialOrd, Copy)]
+#[derive(Clone, Debug, PartialOrd, Copy)]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub enum Datum {
     Bool(bool),
     I64(i64),

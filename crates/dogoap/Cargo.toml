@@ -8,8 +8,11 @@ repository = { workspace = true }
 keywords = { workspace = true }
 categories = { workspace = true }
 
+[features]
+bevy_reflect = ["dep:bevy_reflect"]
+
 [dependencies]
-bevy_reflect = { workspace = true }
+bevy_reflect = { workspace = true, optional = true }
 pathfinding = { workspace = true }
 
 [dev-dependencies]
