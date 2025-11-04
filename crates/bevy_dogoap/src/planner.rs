@@ -220,9 +220,9 @@ pub fn handle_planner_tasks(
                 if planner.current_plan != effect_names {
                     planner.current_plan = effect_names.clone();
                     debug!(
-                        "Current plan changed to: \n{:#?}\n(steps:{})",
-                        effect_names,
-                        effects.len()
+                        ?effect_names,
+                        num_steps = ?effects.len(),
+                        "Current plan changed"
                     );
                 }
 
@@ -255,8 +255,7 @@ pub fn handle_planner_tasks(
                 }
             }
             None => {
-                warn!("Didn't find any plan for our goal in Entity {}!", entity);
-                // warn!("No plan found");
+                warn!("Didn't find any plan for our goal in Entity {entity}!");
             }
         }
         commands.entity(entity).remove::<IsPlanning>();

@@ -76,6 +76,7 @@ mod test {
     use std::time::Duration;
 
     use bevy::time::TimeUpdateStrategy;
+    use bevy_log::LogPlugin;
 
     use super::*;
 
@@ -109,36 +110,40 @@ mod test {
     fn test_basic_bevy_integration_external() {
         let mut app = App::new();
 
+        #[derive(Resource)]
+        struct PlannerDone;
+
+        app.add_plugins((
+            MinimalPlugins,
+            LogPlugin::default(),
+            DogoapPlugin::default(),
+        ))
+        .insert_resource(TimeUpdateStrategy::ManualDuration(
+            // make every `app.update()` trigger a fixed loop
+            Time::<Fixed>::default().timestep(),
+        ))
+        .add_systems(Startup, startup)
+        .add_systems(FixedUpdate, (handle_eat_action, handle_sleep_action))
+        .add_observer(|_: On<Remove, IsPlanning>, mut commands: Commands| {
+            commands.insert_resource(PlannerDone);
+        });
+
         register_components!(app, vec![IsHungry, IsTired]);
 
-        app.add_plugins(MinimalPlugins);
-        app.add_plugins(DogoapPlugin::default());
-        app.insert_resource(TimeUpdateStrategy::ManualDuration(
-            Time::<Fixed>::default().timestep(),
-        ));
-
-        app.add_systems(Startup, startup);
-        app.add_systems(FixedUpdate, (handle_eat_action, handle_sleep_action));
-
         app.finish();
-        app.update();
 
         // Spin until the planner is done planning
         loop {
+            // sleep because we're waiting for another thread to be done
             std::thread::sleep(Duration::from_millis(50));
             app.update();
-            if app
-                .world_mut()
-                .query::<&IsPlanning>()
-                .iter(app.world_mut())
-                .count()
-                == 0
-            {
+            if app.world_mut().get_resource::<PlannerDone>().is_some() {
                 break;
             }
         }
+
         // Execute the plan
-        for _ in 0..3 {
+        for _ in 0..4 {
             app.update();
         }
 
