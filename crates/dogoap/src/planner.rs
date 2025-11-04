@@ -99,7 +99,7 @@ pub fn make_plan_with_strategy(
             )
         }
         PlanningStrategy::GoalToStart => {
-            panic!("PlanningStrategy::GoalToStart hasn't been implemented yet!");
+            todo!("PlanningStrategy::GoalToStart hasn't been implemented yet!");
         }
     }
 }

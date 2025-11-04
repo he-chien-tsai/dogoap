@@ -113,15 +113,15 @@ impl AddAssign for Datum {
                 Self::I64(v2) => {
                     *v1 += v2;
                 }
-                _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
+                _ => unimplemented!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
             Self::F64(v1) => match rhs {
                 Self::F64(v2) => {
                     *v1 += v2;
                 }
-                _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
+                _ => unimplemented!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
-            _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
+            _ => unimplemented!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
         }
     }
 }
@@ -133,15 +133,15 @@ impl SubAssign for Datum {
                 Self::I64(v2) => {
                     *v1 -= v2;
                 }
-                _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
+                _ => unimplemented!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
             Self::F64(v1) => match rhs {
                 Self::F64(v2) => {
                     *v1 -= v2;
                 }
-                _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
+                _ => unimplemented!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
-            _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
+            _ => unimplemented!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
         }
     }
 }

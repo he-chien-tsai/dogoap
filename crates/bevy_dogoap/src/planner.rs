@@ -114,9 +114,9 @@ impl Planner {
 pub fn update_planner_local_state(
     local_field_components: Query<(Entity, &dyn DatumComponent)>,
     mut q_planner: Query<(Entity, &mut Planner)>,
-) {
+) -> Result {
     for (entity, mut planner) in q_planner.iter_mut() {
-        let (_c_entity, components) = local_field_components.get(entity).expect("Didn't find any DatumComponents, make sure you called register_components with all Components you want to use with the planner");
+        let (_c_entity, components) = local_field_components.get(entity).map_err(|_| "Didn't find any DatumComponents, make sure you called register_components with all Components you want to use with the planner")?;
         for component in components {
             planner
                 .state
@@ -124,6 +124,7 @@ pub fn update_planner_local_state(
                 .insert(component.field_key(), component.field_value());
         }
     }
+    Ok(())
 }
 
 /// This system is responsible for finding [`Planner`]s that aren't alreay computing a new plan,
@@ -185,7 +186,7 @@ fn grab_plan_from_task(
 pub fn handle_planner_tasks(
     mut commands: Commands,
     mut query: Query<(Entity, &mut ComputePlan, &mut Planner)>,
-) {
+) -> Result {
     #[cfg_attr(
         feature = "compute-pool",
         expect(
@@ -203,7 +204,7 @@ pub fn handle_planner_tasks(
             Err(e) => match e {
                 crossbeam_channel::TryRecvError::Empty => continue,
                 crossbeam_channel::TryRecvError::Disconnected => {
-                    panic!("Task channel disconnected")
+                    return Err(BevyError::from("Task channel disconnected"));
                 }
             },
         };
@@ -260,4 +261,5 @@ pub fn handle_planner_tasks(
         }
         commands.entity(entity).remove::<IsPlanning>();
     }
+    Ok(())
 }
