@@ -98,9 +98,6 @@ pub fn make_plan_with_strategy(
                 |node| is_goal(node, goal),
             )
         }
-        PlanningStrategy::GoalToStart => {
-            todo!("PlanningStrategy::GoalToStart hasn't been implemented yet!");
-        }
     }
 }
 
@@ -112,9 +109,6 @@ pub enum PlanningStrategy {
     /// `StartToGoal` begins with our current state, and finds the most optimal path to the goal, based on the costs
     /// Might take longer time than `GoalToStart`, but finds the path with the lowest cost
     StartToGoal,
-    /// `GoalToStart` begins with the goal state, and works backwards from there, in order to find a path as quick as possible
-    /// Might lead to less-than-optimial paths, but should find a valid path quicker
-    GoalToStart,
 }
 
 /// Returns a path of [`Node`]s that leads from our start [`LocalState`] to our

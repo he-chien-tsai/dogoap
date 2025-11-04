@@ -456,34 +456,6 @@ fn test_long_plan() {
     assert_eq!(expected_state, plan.last().unwrap().state);
 }
 
-// TODO haven't implemented `PlanningStrategy::GoalToStart` yet
-#[test]
-#[should_panic]
-fn test_reverse_strategy() {
-    let start = LocalState::new().with_datum("is_hungry", Datum::Bool(true));
-    let expected_state = LocalState::new().with_datum("is_hungry", Datum::Bool(false));
-
-    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::Bool(false)));
-
-    let eat_action = simple_action("eat", "is_hungry", Datum::Bool(false));
-    let eat_mutator = Mutator::Set("is_hungry".to_string(), Datum::Bool(false));
-
-    let actions: Vec<Action> = vec![eat_action];
-
-    let plan = get_effects_from_plan(
-        make_plan_with_strategy(PlanningStrategy::GoalToStart, &start, &actions[..], &goal)
-            .unwrap()
-            .0,
-    );
-    assert_eq!(1, plan.len());
-
-    let cons = plan.first().unwrap();
-    assert_eq!("eat", cons.action);
-    assert_eq!(1, cons.mutators.len());
-    assert_eq!(eat_mutator, cons.mutators.first().unwrap().clone());
-    assert_eq!(expected_state, cons.state);
-}
-
 #[test]
 fn test_prefer_lower_cost_plan() {
     // Planner should prefer cheaper plans based on cost

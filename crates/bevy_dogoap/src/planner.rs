@@ -146,17 +146,17 @@ pub fn create_planner_tasks(
 
             #[cfg(feature = "compute-pool")]
             let receiver = {
-                let (send, receiver) = crossbeam_channel::unbounded();
+                let (send, receiver) = crossbeam_channel::bounded(1);
                 thread_pool.spawn(async move {
                         let start = Instant::now();
 
                         // WARN this is the part that can be slow for large search spaces and why we use AsyncComputePool
                         let plan = make_plan(&state, &actions[..], &goal);
-                        let duration_ms = start.elapsed().as_millis();
+                        let duration = start.elapsed();
 
-                        if duration_ms > 10 {
-                            let steps = plan.clone().expect("plan was empty?!").0.len(); // Not very clever to clone if things are slow?
-                            warn!("Planning duration for Entity {entity} was {duration_ms}ms for {steps} steps");
+                        if duration.as_millis() > 10 {
+                            let steps = plan.as_ref().map(|(nodes, _)| nodes.len()).unwrap_or_default();
+                            warn!("Planning duration for Entity {entity} was {duration:?} for {steps} steps");
                         }
 
                     send.send(plan).expect("Failed to send plan");
