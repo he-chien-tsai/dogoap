@@ -1,10 +1,12 @@
 [package]
 name = "bevy_dogoap"
 version = "0.6.0"
-edition = "2021"
-description = "bevy_dogoap"
-license = "MIT"
-homepage = "https://github.com/victorb/dogoap"
+description = "Integration between dogoap and bevy"
+edition = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
 
 [features]
 default = ["compute-pool"]

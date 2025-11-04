@@ -109,13 +109,13 @@ impl Sub for Datum {
 impl AddAssign for Datum {
     fn add_assign(&mut self, rhs: Self) {
         match self {
-            Self::I64(ref mut v1) => match rhs {
+            Self::I64(v1) => match rhs {
                 Self::I64(v2) => {
                     *v1 += v2;
                 }
                 _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
-            Self::F64(ref mut v1) => match rhs {
+            Self::F64(v1) => match rhs {
                 Self::F64(v2) => {
                     *v1 += v2;
                 }
@@ -129,13 +129,13 @@ impl AddAssign for Datum {
 impl SubAssign for Datum {
     fn sub_assign(&mut self, rhs: Self) {
         match self {
-            Self::I64(ref mut v1) => match rhs {
+            Self::I64(v1) => match rhs {
                 Self::I64(v2) => {
                     *v1 -= v2;
                 }
                 _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
-            Self::F64(ref mut v1) => match rhs {
+            Self::F64(v1) => match rhs {
                 Self::F64(v2) => {
                     *v1 -= v2;
                 }

@@ -1,10 +1,12 @@
 [package]
 name = "dogoap_macros"
 version = "0.6.0"
-edition = "2021"
-description = "dogoap_macros"
-license = "MIT"
-homepage = "https://github.com/victorb/dogoap"
+description = "Macros used by dogoap"
+edition = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
 
 [lib]
 proc-macro = true

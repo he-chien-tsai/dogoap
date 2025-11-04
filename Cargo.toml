@@ -2,6 +2,13 @@
 members = ["crates/*"]
 resolver = "2"
 
+[workspace.package]
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/victorb/dogoap"
+keywords = ["goap", "ai"]
+categories = ["game-development"]
+
 [profile.gold-release]
 inherits = "release"
 codegen-units = 1

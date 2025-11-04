@@ -1,6 +1,6 @@
 //! Benchmark for the `long_plan` example.
 
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use dogoap::{
     prelude::*,
     simple::{simple_decrement_action, simple_increment_action},

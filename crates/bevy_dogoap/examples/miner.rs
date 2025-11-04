@@ -871,8 +871,9 @@ fn print_current_local_state(
 
         for child in children.iter() {
             let text = q_child.get(child).unwrap();
-            *text_writer.text(text, 0) =
-                format!("{current_action}\nGold: {gold_amount}\nHunger: {hunger:.0}\nEnergy: {energy:.0}\nHas Ore? {has_ore}\nHas Metal? {has_metal}");
+            *text_writer.text(text, 0) = format!(
+                "{current_action}\nGold: {gold_amount}\nHunger: {hunger:.0}\nEnergy: {energy:.0}\nHas Ore? {has_ore}\nHas Metal? {has_metal}"
+            );
         }
     }
 }

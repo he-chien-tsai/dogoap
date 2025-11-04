@@ -1,10 +1,12 @@
 [package]
 name = "dogoap"
 version = "0.6.0"
-edition = "2021"
-description = "dogoap"
-license = "MIT"
-homepage = "https://github.com/victorb/dogoap"
+description = "GOAP implemented in data-oriented way"
+edition = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
 
 [dependencies]
 bevy_reflect = { workspace = true }

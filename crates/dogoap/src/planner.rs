@@ -40,8 +40,7 @@ impl std::fmt::Debug for Node {
 }
 
 fn heuristic(node: &Node, goal: &Goal) -> usize {
-    let distance = node.state().distance_to_goal(goal) as usize;
-    distance
+    node.state().distance_to_goal(goal) as usize
 }
 
 fn successors<'a>(

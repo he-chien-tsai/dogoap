@@ -8,5 +8,5 @@ pub use crate::goal::Goal;
 pub use crate::localstate::LocalState;
 pub use crate::mutator::Mutator;
 pub use crate::planner::{
-    get_effects_from_plan, make_plan, make_plan_with_strategy, print_plan, Node, PlanningStrategy,
+    Node, PlanningStrategy, get_effects_from_plan, make_plan, make_plan_with_strategy, print_plan,
 };

@@ -136,15 +136,16 @@ pub fn create_planner_tasks(
     let thread_pool = AsyncComputeTaskPool::get();
 
     for (entity, planner) in query.iter() {
-        if planner.always_plan {
-            if let Some(goal) = planner.current_goal.clone() {
-                let state = planner.state.clone();
-                let actions = planner.actions_for_dogoap.clone();
+        if planner.always_plan
+            && let Some(goal) = planner.current_goal.clone()
+        {
+            let state = planner.state.clone();
+            let actions = planner.actions_for_dogoap.clone();
 
-                #[cfg(feature = "compute-pool")]
-                let receiver = {
-                    let (send, receiver) = crossbeam_channel::unbounded();
-                    thread_pool.spawn(async move {
+            #[cfg(feature = "compute-pool")]
+            let receiver = {
+                let (send, receiver) = crossbeam_channel::unbounded();
+                thread_pool.spawn(async move {
                         let start = Instant::now();
 
                         // WARN this is the part that can be slow for large search spaces and why we use AsyncComputePool
@@ -158,15 +159,14 @@ pub fn create_planner_tasks(
 
                     send.send(plan).expect("Failed to send plan");
                     }).detach();
-                    receiver
-                };
-                #[cfg(not(feature = "compute-pool"))]
-                let receiver = Receiver(make_plan(&state, &actions[..], &goal));
+                receiver
+            };
+            #[cfg(not(feature = "compute-pool"))]
+            let receiver = Receiver(make_plan(&state, &actions[..], &goal));
 
-                commands
-                    .entity(entity)
-                    .insert((IsPlanning, ComputePlan(receiver)));
-            }
+            commands
+                .entity(entity)
+                .insert((IsPlanning, ComputePlan(receiver)));
         }
     }
 }

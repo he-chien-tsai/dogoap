@@ -3,8 +3,8 @@
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
-use quote::{quote, ToTokens};
-use syn::{parse_macro_input, Data, DeriveInput, Fields};
+use quote::{ToTokens, quote};
+use syn::{Data, DeriveInput, Fields, parse_macro_input};
 
 /// `ActionComponent` allows you to create Actions directly from your action struct
 ///
@@ -15,7 +15,7 @@ pub fn action_component_derive(input: TokenStream) -> TokenStream {
     let name = &input.ident;
     let snake_case_name = to_snake_case(&name.to_string());
 
-    let gen = quote! {
+    let genenerated = quote! {
         impl ActionComponent for #name {
             fn key() -> String {
                 #snake_case_name.to_owned()
@@ -28,7 +28,7 @@ pub fn action_component_derive(input: TokenStream) -> TokenStream {
             }
         }
     };
-    gen.into()
+    genenerated.into()
 }
 
 /// Implements `#[derive(DatumComponent)]`
@@ -62,7 +62,7 @@ pub fn datum_component_derive(input: TokenStream) -> TokenStream {
         _ => panic!("Expected a struct"),
     };
 
-    let gen = quote! {
+    let genenerated = quote! {
 
         impl DatumComponent for #name {
             fn field_key(&self) -> String {
@@ -107,7 +107,7 @@ pub fn datum_component_derive(input: TokenStream) -> TokenStream {
             }
         }
     };
-    gen.into()
+    genenerated.into()
 }
 
 /// `EnumComponent` is specifically for `DatumComponent`'s that use an Enum/EnumDatum
@@ -164,7 +164,7 @@ pub fn enum_component_derive(input: TokenStream) -> TokenStream {
         _ => panic!("Expected a struct"),
     };
 
-    let gen = quote! {
+    let genenerated = quote! {
 
         impl DatumComponent for #name {
             fn field_key(&self) -> String {
@@ -209,7 +209,7 @@ pub fn enum_component_derive(input: TokenStream) -> TokenStream {
             }
         }
     };
-    gen.into()
+    genenerated.into()
 }
 
 /// `EnumDatum` implements `EnumDatum` trait so you can use it with an `EnumComponent`
@@ -220,7 +220,7 @@ pub fn enum_datum_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
 
-    let gen = quote! {
+    let genenerated = quote! {
         impl EnumDatum for #name {
             fn datum(self) -> Datum {
                 Datum::Enum(self as usize)
@@ -228,7 +228,7 @@ pub fn enum_datum_derive(input: TokenStream) -> TokenStream {
         }
     };
 
-    gen.into()
+    genenerated.into()
 }
 
 fn to_snake_case(s: &str) -> String {
