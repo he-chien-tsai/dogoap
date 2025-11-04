@@ -2,10 +2,10 @@
 
 extern crate alloc;
 
-mod macros;
-mod planner;
-mod plugin;
-mod traits;
+pub mod macros;
+pub mod planner;
+pub mod plugin;
+pub mod traits;
 
 // Public API
 pub mod prelude;

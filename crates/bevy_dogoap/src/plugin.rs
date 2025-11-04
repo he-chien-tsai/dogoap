@@ -4,7 +4,7 @@ use bevy_ecs::schedule::ScheduleLabel;
 use crate::planner;
 use crate::prelude::*;
 
-/// Setups the [`Planner`](planner::Planner) systems in [`DogoapSystems`] to run a specified schedule.
+/// Setups the [`Planner`] systems in [`DogoapSystems`] to run a specified schedule.
 /// Uses [`FixedPreUpdate`] by default.
 pub struct DogoapPlugin {
     schedule: Interned<dyn ScheduleLabel>,
