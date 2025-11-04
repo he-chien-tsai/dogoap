@@ -182,21 +182,18 @@ mod test {
         app.register_component_as::<dyn DatumComponent, IsHungry>();
         app.register_component_as::<dyn DatumComponent, IsTired>();
 
-        app.add_plugins(DogoapPlugin);
         app.add_plugins(MinimalPlugins);
+        app.add_plugins(DogoapPlugin::default());
         app.insert_resource(TimeUpdateStrategy::ManualDuration(
             Time::<Fixed>::default().timestep(),
         ));
 
         app.add_systems(Startup, startup);
-        app.add_systems(Update, (handle_eat_action, handle_sleep_action));
+        app.add_systems(FixedUpdate, (handle_eat_action, handle_sleep_action));
 
         app.finish();
         app.update();
 
-        for _ in 0..3 {
-            app.update();
-        }
         loop {
             std::thread::sleep(Duration::from_millis(200));
             app.update();

@@ -920,7 +920,7 @@ fn main() {
         }),
         ..default()
     }))
-    .add_plugins(DogoapPlugin)
+    .add_plugins(DogoapPlugin::default())
     .add_systems(Startup, startup)
     .add_systems(Update, draw_gizmos)
     .add_systems(

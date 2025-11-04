@@ -63,12 +63,12 @@ fn main() {
 
     app.add_plugins(MinimalPlugins)
         // !!! Don't forget to add the plugin ;)
-       .add_plugins(DogoapPlugin)
+       .add_plugins(DogoapPlugin::default())
        .add_systems(Startup, startup)
        .add_systems(FixedUpdate, handle_eat_action);
 
     // Run a couple of updates to run forward the world
-    for _i in 0..3 {
+    for _i in 0..30 {
         app.update();
     }
 

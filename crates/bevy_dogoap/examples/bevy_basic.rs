@@ -93,7 +93,7 @@ fn main() {
     app.add_plugins(MinimalPlugins);
 
     // Make sure to include the DogoapPlugin which manages the planner for us
-    app.add_plugins(DogoapPlugin);
+    app.add_plugins(DogoapPlugin::default());
 
     // We configure the logplugin to output debug info for both dogoap and bevy_dogoap
     app.add_plugins(LogPlugin {
@@ -105,7 +105,7 @@ fn main() {
     register_components!(app, vec![IsHungry, IsTired]);
 
     app.add_systems(Startup, startup);
-    app.add_systems(Update, (handle_eat_action, handle_sleep_action));
+    app.add_systems(FixedUpdate, (handle_eat_action, handle_sleep_action));
     app.finish();
 
     // Run a bunch of frames to advance

@@ -80,7 +80,7 @@ fn main() {
         }),
         ..default()
     }))
-    .add_plugins(DogoapPlugin)
+    .add_plugins(DogoapPlugin::default())
     .add_systems(Startup, setup)
     .add_systems(Update, (draw_state_debug, draw_ui))
     // Systems that always affects needs
