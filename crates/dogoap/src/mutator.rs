@@ -32,18 +32,20 @@ pub fn apply_mutator(data: &mut InternalData, mutator: &Mutator) {
     }
 }
 
-pub fn print_mutators(mutators: Vec<Mutator>) {
+pub fn serialize_mutators_pretty(mutators: Vec<Mutator>) -> String {
+    let mut output = String::new();
     for mutator in mutators {
         match mutator {
             Mutator::Set(k, v) => {
-                info!("\t\t{k} = {v}");
+                output.push_str(&format!("\t\t{k} = {v}\n"));
             }
             Mutator::Increment(k, v) => {
-                info!("\t\t{k} + {v}");
+                output.push_str(&format!("\t\t{k} + {v}\n"));
             }
             Mutator::Decrement(k, v) => {
-                info!("\t\t{k} - {v}");
+                output.push_str(&format!("\t\t{k} - {v}\n"));
             }
         }
     }
+    output
 }

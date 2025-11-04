@@ -4,7 +4,7 @@ use crate::{
     effect::Effect,
     goal::Goal,
     localstate::LocalState,
-    mutator::{apply_mutator, print_mutators},
+    mutator::{apply_mutator, serialize_mutators_pretty},
 };
 
 use bevy_reflect::Reflect;
@@ -144,30 +144,34 @@ pub fn get_effects_from_plan(plan: Vec<Node>) -> Vec<Effect> {
 
 /// Prints a human-readable version of a plan from [`make_plan`] that shows
 /// what [`Action`]s needs to be executed and what the results of each Action is
-pub fn print_plan(plan: (Vec<Node>, usize)) {
+#[must_use]
+pub fn serialize_plan_pretty(plan: (Vec<Node>, usize)) -> String {
+    let mut output = String::new();
     let nodes = plan.0;
     let cost = plan.1;
     let mut last_state = LocalState::new();
     for node in nodes {
         match node {
             Node::Effect(effect) => {
-                info!("\t\t= DO ACTION {:#?}", effect.action);
-                info!("\t\tMUTATES:");
-                print_mutators(effect.mutators);
+                output.push_str(&format!("\t\t= DO ACTION {:#?}\n", effect.action));
+                output.push_str("\t\tMUTATES:\n");
+                output.push_str(&serialize_mutators_pretty(effect.mutators));
                 last_state = effect.state.clone();
             }
             Node::State(s) => {
-                info!("\t\t= INITIAL STATE");
+                output.push_str("\t\t= INITIAL STATE\n");
                 for (k, v) in &s.data {
-                    info!("\t\t{k} = {v}");
+                    output.push_str(&format!("\t\t{k} = {v}\n"));
                 }
                 last_state = s.clone();
             }
         }
-        info!("\n\t\t---\n");
+        output.push_str("\n\t\t---\n");
     }
-    info!("\t\t= FINAL STATE (COST: {cost})");
+    output.push_str(&format!("\t\t= FINAL STATE (COST: {cost})\n"));
     for (k, v) in &last_state.data {
-        info!("\t\t{k} = {v}");
+        output.push_str(&format!("\t\t{k} = {v}\n"));
     }
+
+    output
 }

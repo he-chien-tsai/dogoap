@@ -511,8 +511,8 @@ fn test_prefer_lower_cost_plan() {
     let plan = make_plan(&start, &actions[..], &goal).unwrap();
     let effects = get_effects_from_plan(plan.0.clone());
 
-    info!("Found plan:");
-    info!("{plan:#?}");
+    println!("Found plan:");
+    println!("{plan:#?}");
 
     assert_eq!(10, effects.len());
     for cons in &effects {
