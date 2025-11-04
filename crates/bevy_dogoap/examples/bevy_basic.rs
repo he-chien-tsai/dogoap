@@ -4,8 +4,8 @@
 //! - `SleepAction`, which sets `is_tired` to false
 //! - `EatAction`, which requires `is_tired` to be false, and sets `is_hungry` to true
 //!
-//! We run three `app.update()` instead of `app.run()`, then print the final state after
-//! those three updates, so there is some sort of end to it all...
+//! We run a bunch of `app.update()` instead of `app.run()`, then print the final state after
+//! those updates, so there is some sort of end to it all...
 //!
 //! Final state should be that `is_hungry` is false, and `is_tired` is false
 
@@ -106,9 +106,10 @@ fn main() {
 
     app.add_systems(Startup, startup);
     app.add_systems(Update, (handle_eat_action, handle_sleep_action));
+    app.finish();
 
-    // Run three frames to advance
-    for _i in 0..3 {
+    // Run a bunch of frames to advance
+    for _i in 0..30 {
         app.update();
     }
 
