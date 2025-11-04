@@ -299,7 +299,6 @@ fn setup(mut commands: Commands) {
 
         // In order to set ServedOrder to true, the agent needs to run ServeOrder
 
-        // let goal = Goal::from_reqs(&[Energy::is_more(1.0), ServedOrder::is(true)]);
         let goal = Goal::from_reqs(&[AtOrderDesk::is(true)]);
 
         let serve_order_action = ServeOrder::action()

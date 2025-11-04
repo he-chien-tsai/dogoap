@@ -386,7 +386,6 @@ fn print_current_local_state(
     q_child: Query<Entity, With<StateDebugText>>,
     mut text_writer: Text2dWriter,
 ) {
-    // let planner = query.single().unwrap();
     for (entity, cell, hunger, children) in query.iter() {
         let age = cell.age;
         let hunger = hunger.0;

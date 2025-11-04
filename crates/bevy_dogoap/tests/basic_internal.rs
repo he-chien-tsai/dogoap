@@ -26,6 +26,7 @@ struct IsTired(bool);
 
 fn startup(mut commands: Commands) {
     // First we define our initial state
+    // verbose way:
     // let state = LocalState::new()
     //     .with_field(IS_HUNGRY_KEY, Field::from(true))
     //     .with_field(IS_TIRED_KEY, Field::from(true));

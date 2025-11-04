@@ -29,7 +29,6 @@ fn startup(mut commands: Commands) {
     let sleep_action = SleepAction::action().add_mutator(IsTired::set(false));
 
     // But we have a handy macro that kind of makes it a lot easier for us!
-    // let actions_map = create_action_map!((EatAction, eat_action), (SleepAction, sleep_action));
 
     let entity = commands.spawn_empty().id();
 
