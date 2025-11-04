@@ -88,9 +88,8 @@ With this example, it should take about 2-3 frames until `IsHungry` is now set t
 
 - [`bevy_basic.rs`](./examples/bevy_basic.rs) - Quickstart - Basic setup possible for integration between `dogoap` and Bevy
 - [`miner.rs`](./examples/miner.rs) - Long plans - How to setup more complicated interactions
-- [`sneaky.rs`](./examples/sneaky.rs) - Player Interactions - How to use `dogoap` for NPCs in a world with a player controlled entity
-- [`villages.rs`](./examples/villages.rs) - Nested Planners - How you can nest planners to achieve something smarter
-- [`lemonade_stand.rs`](./examples/lemonade_stand.rs) - Co-operating Planners - Shows how you can have two entities with two very different planners and "simulate" co-operation
+- [`cells.rs`](./examples/cells.rs) - Spawning multiple planners
+- [`resman.rs`](./examples/resman.rs) - Co-operating Planners - Shows how you can have two entities with two very different planners and "simulate" co-operation
 
 # Bevy Version Support
 
