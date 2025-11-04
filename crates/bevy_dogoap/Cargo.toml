@@ -8,7 +8,7 @@ homepage = "https://github.com/victorb/dogoap"
 
 [features]
 default = ["compute-pool"]
-compute-pool = ["dep:bevy_tasks"]
+compute-pool = ["dep:bevy_tasks", "dep:crossbeam-channel"]
 
 [dependencies]
 bevy_ecs = { workspace = true }
@@ -18,9 +18,11 @@ bevy_reflect = { workspace = true }
 bevy_platform = { workspace = true }
 bevy_tasks = { workspace = true, optional = true }
 bevy-trait-query = { workspace = true }
+
 dogoap = { workspace = true }
 dogoap_macros = { workspace = true}
 rand = { workspace = true}
+crossbeam-channel = { workspace = true, optional = true}
 
 [dev-dependencies]
 bevy = { workspace = true }

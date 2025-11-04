@@ -4,11 +4,7 @@ use bevy_platform::collections::HashMap;
 use core::fmt;
 
 #[cfg(feature = "compute-pool")]
-use {
-    bevy_tasks::futures_lite::future,
-    bevy_tasks::{AsyncComputeTaskPool, Task},
-    std::time::Instant,
-};
+use {bevy_tasks::AsyncComputeTaskPool, crossbeam_channel::Receiver, std::time::Instant};
 
 use dogoap::prelude::*;
 
@@ -67,13 +63,13 @@ impl fmt::Debug for Planner {
 
 /// When we're not using AsyncComputeTaskPool + Task, we define our own so we can replace less code later
 #[cfg(not(feature = "compute-pool"))]
-struct Task<T>(T);
+struct Receiver<T>(T);
 
 /// This Component holds to-be-processed data for `make_plan`
 /// We do it in a asyncronous manner as `make_plan` blocks and if it takes 100ms, we'll delay frames
 /// by 100ms...
 #[derive(Component)]
-pub struct ComputePlan(Task<Option<(Vec<Node>, usize)>>);
+pub struct ComputePlan(Receiver<Option<(Vec<Node>, usize)>>);
 
 /// This Component gets added when the planner for an Entity is currently planning,
 /// and removed once a plan has been created. Normally this will take under 1ms,
@@ -146,35 +142,40 @@ pub fn create_planner_tasks(
                 let actions = planner.actions_for_dogoap.clone();
 
                 #[cfg(feature = "compute-pool")]
-                let task = thread_pool.spawn(async move {
-                    let start = Instant::now();
+                let receiver = {
+                    let (send, receiver) = crossbeam_channel::unbounded();
+                    thread_pool.spawn(async move {
+                        let start = Instant::now();
 
-                    // WARN this is the part that can be slow for large search spaces and why we use AsyncComputePool
-                    let plan = make_plan(&state, &actions[..], &goal);
-                    let duration_ms = start.elapsed().as_millis();
+                        // WARN this is the part that can be slow for large search spaces and why we use AsyncComputePool
+                        let plan = make_plan(&state, &actions[..], &goal);
+                        let duration_ms = start.elapsed().as_millis();
 
-                    if duration_ms > 10 {
-                        let steps = plan.clone().expect("plan was empty?!").0.len(); // Not very clever to clone if things are slow?
-                        warn!("Planning duration for Entity {entity} was {duration_ms}ms for {steps} steps");
-                    }
+                        if duration_ms > 10 {
+                            let steps = plan.clone().expect("plan was empty?!").0.len(); // Not very clever to clone if things are slow?
+                            warn!("Planning duration for Entity {entity} was {duration_ms}ms for {steps} steps");
+                        }
 
-                    plan
-                });
-
+                    send.send(plan).expect("Failed to send plan");
+                    }).detach();
+                    receiver
+                };
                 #[cfg(not(feature = "compute-pool"))]
-                let task = Task(make_plan(&state, &actions[..], &goal));
+                let receiver = Receiver(make_plan(&state, &actions[..], &goal));
 
                 commands
                     .entity(entity)
-                    .insert((IsPlanning, ComputePlan(task)));
+                    .insert((IsPlanning, ComputePlan(receiver)));
             }
         }
     }
 }
 
 #[cfg(not(feature = "compute-pool"))]
-fn grab_plan_from_task(task: &mut Task<Option<(Vec<Node>, usize)>>) -> Option<(Vec<Node>, usize)> {
-    task.0.clone()
+fn grab_plan_from_task(
+    task: &mut Receiver<Option<(Vec<Node>, usize)>>,
+) -> Option<(Vec<Node>, usize)> {
+    task.0.take()
 }
 
 /// This system is responsible for polling active [`ComputePlan`]s and switch the `current_action` if it changed
@@ -184,13 +185,26 @@ pub fn handle_planner_tasks(
     mut commands: Commands,
     mut query: Query<(Entity, &mut ComputePlan, &mut Planner)>,
 ) {
+    #[cfg_attr(
+        feature = "compute-pool",
+        expect(
+            unused_mut,
+            reason = "The receiver doesn't need to be mutable, but we keep the code the same as in the non-compute-pool case for simplicity"
+        )
+    )]
     for (entity, mut task, mut planner) in query.iter_mut() {
         #[cfg(not(feature = "compute-pool"))]
         let p = grab_plan_from_task(&mut task.0);
+
         #[cfg(feature = "compute-pool")]
-        let p = match future::block_on(future::poll_once(&mut task.0)) {
-            Some(r) => r,
-            None => continue,
+        let p = match task.0.try_recv() {
+            Ok(r) => r,
+            Err(e) => match e {
+                crossbeam_channel::TryRecvError::Empty => continue,
+                crossbeam_channel::TryRecvError::Disconnected => {
+                    panic!("Task channel disconnected")
+                }
+            },
         };
 
         commands.entity(entity).remove::<ComputePlan>();

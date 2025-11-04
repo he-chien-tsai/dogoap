@@ -124,9 +124,24 @@ mod test {
         app.finish();
         app.update();
 
-        for _i in 0..3 {
+        for _ in 0..3 {
             app.update();
+        }
+        loop {
             std::thread::sleep(Duration::from_millis(200));
+            app.update();
+            if app
+                .world_mut()
+                .query::<&IsPlanning>()
+                .iter(app.world_mut())
+                .count()
+                == 0
+            {
+                break;
+            }
+        }
+        for _ in 0..3 {
+            app.update();
         }
 
         println!("Final State:\n{:#?}", get_state(&mut app));

@@ -652,6 +652,7 @@ dependencies = [
  "bevy_platform",
  "bevy_reflect",
  "bevy_tasks",
+ "crossbeam-channel",
  "dogoap",
  "dogoap_macros",
  "rand",
