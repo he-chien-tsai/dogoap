@@ -1,7 +1,7 @@
 use bevy::{
     color::palettes::css::*,
-    prelude::*,
     prelude::Camera2d,
+    prelude::*,
     time::common_conditions::on_timer,
     window::{Window, WindowPlugin},
 };
@@ -118,7 +118,7 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
                 Transform::from_translation(Vec3::new(10.0, -10.0, 10.0)),
                 Text2d("".into()),
                 text_style,
-                bevy::sprite::Anchor::TopLeft,
+                bevy::sprite::Anchor::TOP_LEFT,
                 StateDebugText,
             ));
         });
@@ -340,7 +340,7 @@ fn handle_eat_action(
                     if hunger.0 < 0.0 {
                         hunger.0 = 0.0;
                     }
-                    commands.entity(*e_food).despawn_recursive();
+                    commands.entity(*e_food).despawn();
                 }
                 // Don't consume as it doesn't exists
                 Err(_) => {
@@ -371,7 +371,7 @@ fn over_time_needs_change(
         hunger.0 += val;
         if hunger.0 > 100.0 {
             // hunger.0 = 100.0;
-            commands.entity(entity).despawn_recursive();
+            commands.entity(entity).despawn();
             let translation = transform.translation;
             commands.spawn((
                 DeadCell,

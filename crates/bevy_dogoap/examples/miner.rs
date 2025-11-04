@@ -1,7 +1,7 @@
 use bevy::{
     color::palettes::css::*,
-    prelude::*,
     prelude::Camera2d,
+    prelude::*,
     time::common_conditions::on_timer,
     window::{Window, WindowPlugin},
 };
@@ -229,7 +229,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
                     Transform::from_translation(Vec3::new(10.0, -10.0, 10.0)),
                     Text2d("".into()),
                     text_style,
-                    bevy::sprite::Anchor::TopLeft,
+                    bevy::sprite::Anchor::TOP_LEFT,
                     NeedsText,
                 ));
             });
@@ -361,9 +361,7 @@ fn handle_go_to_house_action(
     q_house: Query<&Transform, With<House>>,
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
-        let t_house = q_house
-            .single()
-            .expect("There should only be one house!");
+        let t_house = q_house.single().expect("There should only be one house!");
 
         go_to_location::<GoToHouseAction>(
             &mut at_location,
@@ -410,9 +408,7 @@ fn handle_go_to_outside_action(
     q_house: Query<&Transform, With<House>>,
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
-        let t_house = q_house
-            .single()
-            .expect("There should only be one house!");
+        let t_house = q_house.single().expect("There should only be one house!");
 
         // Outside is slightly to the left of the house... Fight me
         let offset = Vec3::new(-30.0, 0.0, 0.0);
@@ -567,7 +563,7 @@ fn handle_eat_action(
         hunger.0 -= 50.0;
 
         commands.entity(entity).remove::<EatAction>();
-        commands.entity(mushroom.0).despawn_recursive();
+        commands.entity(mushroom.0).despawn();
 
         at_location.0 = Location::Outside;
     }
@@ -667,7 +663,7 @@ fn handle_mine_ore_action(
                     at_location.0 = Location::Outside;
 
                     commands.entity(entity).remove::<MineOreAction>();
-                    commands.entity(closest.0).despawn_recursive();
+                    commands.entity(closest.0).despawn();
                 } else {
                     let mut rng = rand::rng();
 

@@ -35,8 +35,8 @@ use std::collections::{HashMap, VecDeque};
 
 use bevy::{
     color::palettes::css::*,
-    prelude::*,
     prelude::Camera2d,
+    prelude::*,
     window::{Window, WindowPlugin},
 };
 use bevy_dogoap::prelude::*;
@@ -284,7 +284,7 @@ fn setup(mut commands: Commands) {
                         font_size: 12.0,
                         ..default()
                     },
-                    bevy::sprite::Anchor::TopLeft,
+                    bevy::sprite::Anchor::TOP_LEFT,
                     StateDebugText,
                 ));
             });
@@ -363,7 +363,7 @@ fn setup(mut commands: Commands) {
                         font_size: 12.0,
                         ..default()
                     },
-                    bevy::sprite::Anchor::TopLeft,
+                    bevy::sprite::Anchor::TOP_LEFT,
                     StateDebugText,
                 ));
             });
@@ -383,7 +383,7 @@ fn setup(mut commands: Commands) {
                     font_size: 12.0,
                     ..default()
                 },
-                bevy::sprite::Anchor::TopLeft,
+                bevy::sprite::Anchor::TOP_LEFT,
                 StateDebugText,
             ));
         });
@@ -402,7 +402,7 @@ fn setup(mut commands: Commands) {
                     font_size: 12.0,
                     ..default()
                 },
-                bevy::sprite::Anchor::TopLeft,
+                bevy::sprite::Anchor::TOP_LEFT,
                 StateDebugText,
             ));
         });
