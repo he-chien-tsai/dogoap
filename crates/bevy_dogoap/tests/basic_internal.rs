@@ -114,7 +114,7 @@ fn handle_eat_action(
         //     .fields
         //     .insert(IS_HUNGRY_KEY.to_string(), Field::Bool(false));
         commands.entity(entity).remove::<EatAction>();
-        println!("Removed EatAction from our Entity {}", entity);
+        println!("Removed EatAction from our Entity {entity}");
     }
 }
 
@@ -131,7 +131,7 @@ fn handle_sleep_action(
         //     .fields
         //     .insert(IS_TIRED_KEY.to_string(), Field::Bool(false));
         commands.entity(entity).remove::<SleepAction>();
-        println!("Removed SleepAction from our Entity {}", entity);
+        println!("Removed SleepAction from our Entity {entity}");
     }
 }
 
@@ -141,7 +141,7 @@ mod test {
     // Test utils
     fn get_planner(app: &mut App) -> &Planner {
         let mut query = app.world_mut().query::<&Planner>();
-        let planners: Vec<&Planner> = query.iter(&app.world()).map(|v| v).collect();
+        let planners: Vec<&Planner> = query.iter(app.world()).collect();
 
         planners.first().unwrap()
     }
@@ -159,23 +159,23 @@ mod test {
         assert_eq!(*found_val, expected_val);
     }
 
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     fn assert_component_exists<T>(app: &mut App)
     where
-        T: bevy::prelude::Component,
+        T: Component,
     {
         let mut query = app.world_mut().query::<&T>();
-        let c = query.iter(&app.world()).len();
-        assert_eq!(c > 0, true);
+        let c = query.iter(app.world()).len();
+        assert!(c > 0);
     }
 
     fn assert_component_not_exists<T>(app: &mut App)
     where
-        T: bevy::prelude::Component,
+        T: Component,
     {
         let mut query = app.world_mut().query::<&T>();
-        let c = query.iter(&app.world()).len();
-        assert_eq!(c == 0, true);
+        let c = query.iter(app.world()).len();
+        assert!(c == 0);
     }
 
     #[test]

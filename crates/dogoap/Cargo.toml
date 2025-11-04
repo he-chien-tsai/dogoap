@@ -10,6 +10,16 @@ homepage = "https://github.com/victorb/dogoap"
 bevy_reflect = { workspace = true }
 pathfinding = { workspace = true }
 
-[features]
-# Define a feature for nightly usage
-bench = []
+[dev-dependencies]
+criterion = { workspace = true }
+
+[[bench]]
+name = "long_plan"
+harness = false
+
+[lints]
+workspace = true
+
+[package.metadata.docs.rs]
+rustdoc-args = ["-Zunstable-options", "--generate-link-to-definition"]
+all-features = true

@@ -19,12 +19,12 @@ fn startup(mut commands: Commands) {
     let goal = Goal::from_reqs(&[IsHungry::is(false), IsTired::is(false)]);
 
     // Alternatively, the `simple` functions can help you create things a bit smoother
-    let eat_action = EatAction::new()
+    let eat_action = EatAction::new_action()
         .add_precondition(IsTired::is(false))
         .add_mutator(IsHungry::set(false));
 
     // Here we define our SleepAction
-    let sleep_action = SleepAction::new().add_mutator(IsTired::set(false));
+    let sleep_action = SleepAction::new_action().add_mutator(IsTired::set(false));
 
     // But we have a handy macro that kind of makes it a lot easier for us!
     // let actions_map = create_action_map!((EatAction, eat_action), (SleepAction, sleep_action));
@@ -55,7 +55,7 @@ fn handle_eat_action(
         println!("We're doing EatAction!");
         is_hungry.0 = false;
         commands.entity(entity).remove::<EatAction>();
-        println!("Removed EatAction from our Entity {}", entity);
+        println!("Removed EatAction from our Entity {entity}");
     }
 }
 
@@ -67,7 +67,7 @@ fn handle_sleep_action(
         println!("We're doing SleepAction!");
         is_tired.0 = false;
         commands.entity(entity).remove::<SleepAction>();
-        println!("Removed SleepAction from our Entity {}", entity);
+        println!("Removed SleepAction from our Entity {entity}");
     }
 }
 
@@ -77,7 +77,7 @@ mod test {
     // Test utils
     fn get_state(app: &mut App) -> LocalState {
         let mut query = app.world_mut().query::<&Planner>();
-        let planners: Vec<&Planner> = query.iter(&app.world()).map(|v| v).collect();
+        let planners: Vec<&Planner> = query.iter(app.world()).collect();
 
         let planner = planners.first().unwrap();
 
@@ -88,26 +88,26 @@ mod test {
         let state = get_state(app);
         let expected_val = Datum::Bool(expected_bool);
         let found_val = state.data.get(key).unwrap();
-        assert_eq!(*found_val, expected_val, "{}", msg);
+        assert_eq!(*found_val, expected_val, "{msg}");
     }
 
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     fn assert_component_exists<T>(app: &mut App)
     where
-        T: bevy::prelude::Component,
+        T: Component,
     {
         let mut query = app.world_mut().query::<&T>();
-        let c = query.iter(&app.world()).len();
-        assert_eq!(c > 0, true);
+        let c = query.iter(app.world()).len();
+        assert!(c > 0);
     }
 
     fn assert_component_not_exists<T>(app: &mut App)
     where
-        T: bevy::prelude::Component,
+        T: Component,
     {
         let mut query = app.world_mut().query::<&T>();
-        let c = query.iter(&app.world()).len();
-        assert_eq!(c == 0, true);
+        let c = query.iter(app.world()).len();
+        assert!(c == 0);
     }
 
     #[test]

@@ -7,7 +7,7 @@ use crate::compare::Compare;
 use crate::effect::Effect;
 use crate::mutator::Mutator;
 
-/// An `Action` represents something your Entity can do, granted the LocalState
+/// An `Action` represents something your Entity can do, granted the `LocalState`
 /// is as defined in the `preconditions`. It has a list of `Effect`s that apply
 /// if the NPC successfully executed the task.
 #[derive(Reflect, Clone, Debug, PartialEq, Default)]
@@ -57,7 +57,7 @@ impl Action {
 
     // TODO currently only handles one effect
     pub fn add_mutator(mut self, mutator: Mutator) -> Self {
-        if self.effects.len() == 0 {
+        if self.effects.is_empty() {
             self.effects = vec![Effect::new(&self.key.clone()).with_mutator(mutator)];
         } else {
             let mut effect = self.effects[0].clone();

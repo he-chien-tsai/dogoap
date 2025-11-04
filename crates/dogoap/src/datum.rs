@@ -67,16 +67,16 @@ impl Display for Datum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Bool(v) => {
-                write!(f, "Datum:Bool({})", v)
+                write!(f, "Datum:Bool({v})")
             }
             Self::I64(v) => {
-                write!(f, "Datum:I64({})", v)
+                write!(f, "Datum:I64({v})")
             }
             Self::F64(v) => {
-                write!(f, "Datum:F64({})", v)
+                write!(f, "Datum:F64({v})")
             }
             Self::Enum(v) => {
-                write!(f, "Datum:Enum({})", v)
+                write!(f, "Datum:Enum({v})")
             }
         }
     }
@@ -89,10 +89,7 @@ impl Add for &Datum {
         match (self, other) {
             (Datum::I64(a), Datum::I64(b)) => Datum::I64(a + b),
             (Datum::F64(a), Datum::F64(b)) => Datum::F64(a + b),
-            _ => panic!(
-                "Unsupported addition between Datum variants, {:?} - {:?}",
-                self, other
-            ),
+            _ => panic!("Unsupported addition between Datum variants, {self:?} - {other:?}"),
         }
     }
 }
@@ -100,7 +97,7 @@ impl Add for &Datum {
 impl Add for Datum {
     type Output = Datum;
 
-    #[allow(clippy::op_ref)]
+    #[expect(clippy::op_ref)]
     fn add(self, other: Datum) -> Datum {
         &self + &other
     }
@@ -113,10 +110,7 @@ impl Sub for &Datum {
         match (self, other) {
             (Datum::I64(a), Datum::I64(b)) => Datum::I64(a - b),
             (Datum::F64(a), Datum::F64(b)) => Datum::F64(a - b),
-            _ => panic!(
-                "Unsupported negation between Datum variants, {:?} - {:?}",
-                self, other
-            ),
+            _ => panic!("Unsupported negation between Datum variants, {self:?} - {other:?}"),
         }
     }
 }
@@ -124,7 +118,7 @@ impl Sub for &Datum {
 impl Sub for Datum {
     type Output = Datum;
 
-    #[allow(clippy::op_ref)]
+    #[expect(clippy::op_ref)]
     fn sub(self, other: Datum) -> Datum {
         &self - &other
     }
@@ -137,15 +131,15 @@ impl AddAssign for Datum {
                 Self::I64(v2) => {
                     *v1 += v2;
                 }
-                _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
+                _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
             Self::F64(ref mut v1) => match rhs {
                 Self::F64(v2) => {
                     *v1 += v2;
                 }
-                _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
+                _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
-            _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
+            _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
         }
     }
 }
@@ -157,21 +151,23 @@ impl SubAssign for Datum {
                 Self::I64(v2) => {
                     *v1 -= v2;
                 }
-                _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
+                _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
             Self::F64(ref mut v1) => match rhs {
                 Self::F64(v2) => {
                     *v1 -= v2;
                 }
-                _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
+                _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
-            _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
+            _ => panic!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
         }
     }
 }
 
 #[cfg(test)]
 mod test {
+    use std::cmp::Ordering;
+
     use crate::prelude::*;
     #[test]
     fn test_equality() {
@@ -196,7 +192,10 @@ mod test {
         assert!(Datum::I64(100) >= Datum::I64(10));
         assert!(Datum::I64(1) >= Datum::I64(0));
         assert!(Datum::I64(100) >= Datum::I64(100));
-        assert!(!(Datum::I64(100) >= Datum::I64(101)));
+        assert!(matches!(
+            Datum::I64(100).partial_cmp(&Datum::I64(101)),
+            None | Some(Ordering::Less)
+        ));
 
         // Float
         assert!(Datum::F64(1.1) >= Datum::F64(1.1));

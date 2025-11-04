@@ -17,10 +17,10 @@ fn main() {
 
     let plan = make_plan(&start, &actions[..], &goal);
 
-    println!("{:#?}", plan);
+    println!("{plan:#?}");
 
     print_plan(plan.unwrap());
 
-    println!("");
+    println!();
     println!("[Everything went as expected!]");
 }

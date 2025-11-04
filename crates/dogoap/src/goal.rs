@@ -23,6 +23,12 @@ impl Hash for Goal {
     }
 }
 
+impl Default for Goal {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Goal {
     pub fn new() -> Self {
         Self {

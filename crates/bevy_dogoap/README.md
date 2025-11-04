@@ -82,7 +82,7 @@ fn main() {
 }
 ```
 
-With this example, it should take about 2-3 frames until IsHungry is now set to `false` as the planner came up with a plan, added the EatAction component, our system handled the action and changed the DatumComponent
+With this example, it should take about 2-3 frames until `IsHungry` is now set to `false` as the planner came up with a plan, added the `EatAction` component, our system handled the action and changed the `DatumComponent`
 
 ### More Examples
 

@@ -32,10 +32,10 @@ fn test_basic_bool_setting() {
     let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0);
     assert_eq!(1, plan.len());
 
-    let cons = plan.get(0).unwrap();
+    let cons = plan.first().unwrap();
     assert_eq!("eat", cons.action);
     assert_eq!(1, cons.mutators.len());
-    assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
+    assert_eq!(eat_mutator, cons.mutators.first().unwrap().clone());
 
     let expected_state = LocalState::new().with_datum("is_hungry", Datum::Bool(false));
     assert_eq!(expected_state, cons.state);
@@ -89,10 +89,10 @@ fn test_simple_action() {
     let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0);
     assert_eq!(1, plan.len());
 
-    let cons = plan.get(0).unwrap();
+    let cons = plan.first().unwrap();
     assert_eq!("eat", cons.action);
     assert_eq!(1, cons.mutators.len());
-    assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
+    assert_eq!(eat_mutator, cons.mutators.first().unwrap().clone());
     assert_eq!(expected_state, cons.state);
 }
 
@@ -121,7 +121,7 @@ fn test_two_bools() {
     let cons = get_effects_from_plan(plan.0);
     assert_eq!(2, cons.len());
 
-    let first_cons = cons.get(0).unwrap();
+    let first_cons = cons.first().unwrap();
     assert_eq!("eat", first_cons.action);
     assert_eq!(1, first_cons.mutators.len());
 
@@ -185,7 +185,7 @@ fn test_four_bools() {
     let cons = get_effects_from_plan(plan.0);
     assert_eq!(4, cons.len());
 
-    let first_cons = cons.get(0).unwrap();
+    let first_cons = cons.first().unwrap();
     assert_eq!("train", first_cons.action);
     assert_eq!(3, first_cons.mutators.len());
 
@@ -223,20 +223,20 @@ fn test_enums() {
     let loc_market = Datum::Enum(TestLocation::Market as usize);
     let loc_ramen = Datum::Enum(TestLocation::RamenShop as usize);
 
-    let start = LocalState::new().with_datum("at_location", loc_house.clone());
+    let start = LocalState::new().with_datum("at_location", loc_house);
 
-    let expected_state = LocalState::new().with_datum("at_location", loc_ramen.clone());
+    let expected_state = LocalState::new().with_datum("at_location", loc_ramen);
 
-    let goal = Goal::new().with_req("at_location", Compare::Equals(loc_ramen.clone()));
+    let goal = Goal::new().with_req("at_location", Compare::Equals(loc_ramen));
 
-    let go_outside_action = simple_action("go_outside", "at_location", loc_outside.clone())
-        .with_precondition("at_location", Compare::Equals(loc_house.clone()));
+    let go_outside_action = simple_action("go_outside", "at_location", loc_outside)
+        .with_precondition("at_location", Compare::Equals(loc_house));
 
-    let go_to_market_action = simple_action("go_to_market", "at_location", loc_market.clone())
-        .with_precondition("at_location", Compare::Equals(loc_outside.clone()));
+    let go_to_market_action = simple_action("go_to_market", "at_location", loc_market)
+        .with_precondition("at_location", Compare::Equals(loc_outside));
 
-    let go_to_ramen_action = simple_action("go_to_ramen", "at_location", loc_ramen.clone())
-        .with_precondition("at_location", Compare::Equals(loc_market.clone()));
+    let go_to_ramen_action = simple_action("go_to_ramen", "at_location", loc_ramen)
+        .with_precondition("at_location", Compare::Equals(loc_market));
 
     let actions: Vec<Action> = vec![go_outside_action, go_to_market_action, go_to_ramen_action];
 
@@ -245,7 +245,7 @@ fn test_enums() {
 
     assert_eq!(3, effects.len());
 
-    let cons = effects.get(0).unwrap();
+    let cons = effects.first().unwrap();
     assert_eq!("go_outside", cons.action);
     assert_eq!(1, cons.mutators.len());
 
@@ -292,7 +292,7 @@ fn test_preconditions() {
     let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0);
     assert_eq!(3, plan.len());
 
-    let first_cons = plan.get(0).unwrap();
+    let first_cons = plan.first().unwrap();
     assert_eq!("sleep", first_cons.action);
     assert_eq!(1, first_cons.mutators.len());
 
@@ -320,7 +320,7 @@ fn test_int_increment() {
 
     // TOOD should keep the `10 as 64` syntax with .from somehow
     let eat_action = simple_increment_action("eat", "energy", Datum::I64(10));
-    let eat_mutator = Mutator::Increment("energy".to_string(), Datum::I64(10 as i64));
+    let eat_mutator = Mutator::Increment("energy".to_string(), Datum::I64(10_i64));
 
     let actions: Vec<Action> = vec![eat_action];
 
@@ -330,7 +330,7 @@ fn test_int_increment() {
     for cons in &plan {
         assert_eq!("eat", cons.action);
         assert_eq!(1, cons.mutators.len());
-        assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
+        assert_eq!(eat_mutator, cons.mutators.first().unwrap().clone());
     }
 
     assert_eq!(expected_state, plan.last().unwrap().state);
@@ -338,13 +338,13 @@ fn test_int_increment() {
 
 #[test]
 fn test_int_decrement() {
-    let start = LocalState::new().with_datum("hunger", Datum::I64(80 as i64));
-    let expected_state = LocalState::new().with_datum("hunger", Datum::I64(10 as i64));
+    let start = LocalState::new().with_datum("hunger", Datum::I64(80_i64));
+    let expected_state = LocalState::new().with_datum("hunger", Datum::I64(10_i64));
 
-    let goal = Goal::new().with_req("hunger", Compare::Equals(Datum::I64(10 as i64)));
+    let goal = Goal::new().with_req("hunger", Compare::Equals(Datum::I64(10_i64)));
 
-    let eat_action = simple_decrement_action("eat", "hunger", Datum::I64(10 as i64));
-    let eat_mutator = Mutator::Decrement("hunger".to_string(), Datum::I64(10 as i64));
+    let eat_action = simple_decrement_action("eat", "hunger", Datum::I64(10_i64));
+    let eat_mutator = Mutator::Decrement("hunger".to_string(), Datum::I64(10_i64));
 
     let actions: Vec<Action> = vec![eat_action];
 
@@ -354,7 +354,7 @@ fn test_int_decrement() {
     for cons in &plan {
         assert_eq!("eat", cons.action);
         assert_eq!(1, cons.mutators.len());
-        assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
+        assert_eq!(eat_mutator, cons.mutators.first().unwrap().clone());
     }
 
     assert_eq!(expected_state, plan.last().unwrap().state);
@@ -378,7 +378,7 @@ fn test_float_increment() {
     for cons in &plan {
         assert_eq!("eat", cons.action);
         assert_eq!(1, cons.mutators.len());
-        assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
+        assert_eq!(eat_mutator, cons.mutators.first().unwrap().clone());
     }
 
     assert_eq!(expected_state, plan.last().unwrap().state);
@@ -406,7 +406,7 @@ fn test_greater_than_equals() {
         assert_eq!(1, cons.mutators.len());
         assert_eq!(
             Mutator::Increment("energy".to_string(), Datum::I64(6)),
-            cons.mutators.get(0).unwrap().clone()
+            cons.mutators.first().unwrap().clone()
         );
     }
 
@@ -475,10 +475,10 @@ fn test_reverse_strategy() {
     );
     assert_eq!(1, plan.len());
 
-    let cons = plan.get(0).unwrap();
+    let cons = plan.first().unwrap();
     assert_eq!("eat", cons.action);
     assert_eq!(1, cons.mutators.len());
-    assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
+    assert_eq!(eat_mutator, cons.mutators.first().unwrap().clone());
     assert_eq!(expected_state, cons.state);
 }
 
@@ -504,13 +504,13 @@ fn test_prefer_lower_cost_plan() {
         .add_mutator(Mutator::Increment("gold".to_string(), Datum::I64(3)))
         .set_cost(4); // Cost/gold is higher than cheap_action
 
-    let actions = vec![cheap_action, expensive_action];
+    let actions = [cheap_action, expensive_action];
 
     let plan = make_plan(&start, &actions[..], &goal).unwrap();
     let effects = get_effects_from_plan(plan.0.clone());
 
     println!("Found plan:");
-    println!("{:#?}", plan);
+    println!("{plan:#?}");
 
     assert_eq!(10, effects.len());
     for cons in &effects {

@@ -46,8 +46,8 @@ pub struct Planner {
     pub always_plan: bool,
     /// If the Planner should remove the current goal if it cannot find any plan to reach it
     pub remove_goal_on_no_plan_found: bool,
-    /// plan_next_tick works like a toggle, that once you've set it to true, it'll make a new plan once
-    /// then turn it to false. Combine with always_plan set to false and you can manually decide when
+    /// `plan_next_tick` works like a toggle, that once you've set it to true, it'll make a new plan once
+    /// then turn it to false. Combine with `always_plan` set to false and you can manually decide when
     /// new plans should be made.
     pub plan_next_tick: bool,
 
@@ -69,11 +69,11 @@ impl fmt::Debug for Planner {
 #[cfg(not(feature = "compute-pool"))]
 struct Task<T>(T);
 
-/// This Component holds to-be-processed data for make_plan
-/// We do it in a asyncronous manner as make_plan blocks and if it takes 100ms, we'll delay frames
+/// This Component holds to-be-processed data for `make_plan`
+/// We do it in a asyncronous manner as `make_plan` blocks and if it takes 100ms, we'll delay frames
 /// by 100ms...
 #[derive(Component)]
-pub struct ComputePlan(Task<Option<(Vec<dogoap::prelude::Node>, usize)>>);
+pub struct ComputePlan(Task<Option<(Vec<Node>, usize)>>);
 
 /// This Component gets added when the planner for an Entity is currently planning,
 /// and removed once a plan has been created. Normally this will take under 1ms,
@@ -114,7 +114,7 @@ impl Planner {
     }
 }
 
-/// This system "syncs" our [`DatumComponent`]s with the LocalState in the [`Planner`]
+/// This system "syncs" our [`DatumComponent`]s with the `LocalState` in the [`Planner`]
 pub fn update_planner_local_state(
     local_field_components: Query<(Entity, &dyn DatumComponent)>,
     mut q_planner: Query<(Entity, &mut Planner)>,
@@ -216,7 +216,7 @@ pub fn handle_planner_tasks(
                     Some(first_effect) => {
                         let action_name = first_effect.action.clone();
 
-                        let (found_action, action_component) = planner.actions_map.get(&action_name).unwrap_or_else(|| panic!("Didn't find action {:?} registered in the Planner::actions_map", action_name));
+                        let (found_action, action_component) = planner.actions_map.get(&action_name).unwrap_or_else(|| panic!("Didn't find action {action_name:?} registered in the Planner::actions_map"));
 
                         if planner.current_action.is_some()
                             && Some(found_action) != planner.current_action.as_ref()

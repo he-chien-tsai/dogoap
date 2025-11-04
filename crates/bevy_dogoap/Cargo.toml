@@ -25,18 +25,9 @@ rand = { workspace = true}
 [dev-dependencies]
 bevy = { workspace = true }
 
-[[example]]
-name = "bevy_basic"
-path = "examples/bevy_basic.rs"
+[lints]
+workspace = true
 
-[[example]]
-name = "cells"
-path = "examples/cells.rs"
-
-[[example]]
-name = "miner"
-path = "examples/miner.rs"
-
-[[example]]
-name = "resman"
-path = "examples/resman.rs"
+[package.metadata.docs.rs]
+rustdoc-args = ["-Zunstable-options", "--generate-link-to-definition"]
+all-features = true

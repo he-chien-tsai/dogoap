@@ -92,7 +92,7 @@ pub trait ActionComponent: Send + Sync {
     where
         Self: Sized;
     /// Creates a new [`Action`] with our snake_case key
-    fn new() -> Action
+    fn new_action() -> Action
     where
         Self: Sized;
     /// Returns the type name

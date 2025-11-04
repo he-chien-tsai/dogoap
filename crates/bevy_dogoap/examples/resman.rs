@@ -192,8 +192,8 @@ struct LemonadeMaker;
 #[derive(Component)]
 struct Order {
     items_to_produce: VecDeque<Item>,
-    items: Vec<Item>,
-    owner: Entity,
+    _items: Vec<Item>,
+    _owner: Entity,
 }
 
 #[derive(Component, Default)]
@@ -216,32 +216,32 @@ fn setup(mut commands: Commands) {
         let goal = Goal::from_reqs(&[Thirst::is_less(1.0)]);
 
         // Requires us to carry a lemonade, results in us having 10 less thirst + carrying Nothing
-        let drink_lemonade_action = DrinkLemonade::new()
+        let drink_lemonade_action = DrinkLemonade::new_action()
             .add_precondition(CarryingItem::is(Item::Lemonade))
             .add_mutator(CarryingItem::set(Item::Nothing))
             .add_mutator(Thirst::decrease(10.0));
 
         // Requires us to not be carrying nothing, and leads to us having a lemonade
-        let pickup_lemonade_action = PickupLemonade::new()
+        let pickup_lemonade_action = PickupLemonade::new_action()
             .add_precondition(CarryingItem::is(Item::Nothing))
             .add_precondition(OrderReady::is(true))
             .add_precondition(AtOrderDesk::is(true))
             .add_mutator(CarryingItem::set(Item::Lemonade));
 
         // Requires us to having placed an order, order not yet ready and we're at the order desk
-        let wait_for_order_action = WaitForOrder::new()
+        let wait_for_order_action = WaitForOrder::new_action()
             .add_precondition(PlacedOrder::is(true))
             .add_precondition(OrderReady::is(false))
             .add_precondition(AtOrderDesk::is(true))
             .add_mutator(OrderReady::set(true));
 
         // Requires us to not having placed an order previously, and we're at the ordering desk
-        let place_order_action = PlaceOrder::new()
+        let place_order_action = PlaceOrder::new_action()
             .add_precondition(PlacedOrder::is(false))
             .add_precondition(AtOrderDesk::is(true))
             .add_mutator(PlacedOrder::set(true));
 
-        let go_to_order_desk_action = GoToOrderDesk::new()
+        let go_to_order_desk_action = GoToOrderDesk::new_action()
             .add_precondition(AtOrderDesk::is(false))
             .add_mutator(AtOrderDesk::set(true));
 
@@ -304,25 +304,25 @@ fn setup(mut commands: Commands) {
         // let goal = Goal::from_reqs(&[Energy::is_more(1.0), ServedOrder::is(true)]);
         let goal = Goal::from_reqs(&[AtOrderDesk::is(true)]);
 
-        let serve_order_action = ServeOrder::new()
+        let serve_order_action = ServeOrder::new_action()
             .add_precondition(CarryingItem::is(Item::Lemonade))
             .add_precondition(AtOrderDesk::is(true))
             .add_mutator(ServedOrder::set(true));
 
-        let produce_lemonade_action = ProduceLemonade::new()
+        let produce_lemonade_action = ProduceLemonade::new_action()
             .add_precondition(CarryingItem::is(Item::Nothing))
             .add_precondition(AtLemonadeMaker::is(true))
             .add_mutator(CarryingItem::set(Item::Lemonade));
 
-        let go_to_lemonade_maker_action = GoToLemonadeMaker::new()
+        let go_to_lemonade_maker_action = GoToLemonadeMaker::new_action()
             .add_precondition(AtLemonadeMaker::is(false))
             .add_mutator(AtLemonadeMaker::set(true));
 
-        let rest_action = Rest::new()
+        let rest_action = Rest::new_action()
             .add_precondition(Energy::is_less(10.0))
             .add_mutator(Energy::increase(50.0));
 
-        let go_to_order_desk_action = GoToOrderDesk::new()
+        let go_to_order_desk_action = GoToOrderDesk::new_action()
             .add_precondition(AtOrderDesk::is(false))
             .add_precondition(ShouldGoToOrderDesk::is(true))
             .add_mutator(AtOrderDesk::set(true));
@@ -411,18 +411,16 @@ fn setup(mut commands: Commands) {
 }
 
 fn handle_call_worker_to_empty_order_desk(
-    mut commands: Commands,
-    mut q_order_desks: Query<(&mut OrderDesk, &Transform)>,
+    mut q_order_desks: Query<&mut OrderDesk>,
     mut q_workers: Query<
-        (Entity, &mut ShouldGoToOrderDesk, &Transform),
+        (Entity, &mut ShouldGoToOrderDesk),
         (With<Worker>, Without<GoToOrderDesk>),
     >,
 ) {
-    for (mut order_desk, t_order_desk) in q_order_desks.iter_mut() {
+    for mut order_desk in q_order_desks.iter_mut() {
         if order_desk.assigned_customer.is_some() && order_desk.assigned_worker.is_none() {
             // This order desk needs a worker!
-            let (mut worker, mut should_go, t_worker) =
-                q_workers.iter_mut().next().expect("no workers");
+            let (worker, mut should_go) = q_workers.iter_mut().next().expect("no workers");
             should_go.0 = true;
             order_desk.assigned_worker = Some(worker);
         }
@@ -489,14 +487,8 @@ fn handle_go_to_order_desk(
     }
 }
 
-fn handle_wait_for_order(
-    mut commands: Commands,
-    time: Res<Time>,
-    mut query: Query<(Entity, &Customer, &WaitForOrder, &mut OrderReady)>,
-    q_order: Query<&Order>,
-    // mut progresses: Local<HashMap<Entity, Timer>>,
-) {
-    for (entity, customer, _action, mut state) in query.iter_mut() {
+fn handle_wait_for_order(mut query: Query<(&Customer, &WaitForOrder)>, q_order: Query<&Order>) {
+    for (customer, _action) in query.iter_mut() {
         match customer.order {
             Some(e_order) => {
                 let order = q_order.get(e_order).expect("Impossible!");
@@ -510,21 +502,6 @@ fn handle_wait_for_order(
                 // Shouldn't be possible!
             }
         }
-        // match progresses.get_mut(&entity) {
-        //     Some(progress) => {
-        //         if progress.tick(time.delta()).just_finished() {
-        //             state.0 = true;
-        //             commands.entity(entity).remove::<WaitForOrder>();
-        //             progresses.remove(&entity);
-        //         } else {
-        //             // In progress...
-        //             println!("WaitOrder Progress: {}", progress.fraction());
-        //         }
-        //     }
-        //     None => {
-        //         progresses.insert(entity, Timer::from_seconds(1.0, TimerMode::Once));
-        //     }
-        // }
     }
 }
 
@@ -545,15 +522,12 @@ fn handle_place_order(
             match progresses.get_mut(&entity) {
                 Some(progress) => {
                     if progress.tick(time.delta()).just_finished() {
-                        // state.0 = true;
-                        // commands.entity(entity).remove::<PlaceOrder>();
-                        // progresses.remove(&entity);
                         println!("PlaceOrder complete!");
                         // Produce Order with one Lemonade, assign to OrderDesk
                         let new_order = Order {
                             items_to_produce: VecDeque::from([Item::Lemonade]),
-                            items: vec![],
-                            owner: entity,
+                            _items: vec![],
+                            _owner: entity,
                         };
 
                         let e_order = commands.spawn((Name::new("Order"), new_order)).id();
@@ -666,9 +640,8 @@ fn draw_state_debug(
 
         // Get current action, should always be one so grab the first one we find
         for (_entity, actions) in q_actions.get(entity).iter() {
-            for action in actions.iter() {
+            if let Some(action) = actions.iter().next() {
                 current_action = action.action_type_name();
-                break;
             }
         }
 
@@ -679,12 +652,12 @@ fn draw_state_debug(
                 state = format!(
                     "{}\n{}: {}",
                     state,
-                    datum.field_key().to_string(),
+                    datum.field_key(),
                     match datum.field_value() {
                         Datum::Bool(v) => v.to_string(),
-                        Datum::F64(v) => format!("{:.2}", v).to_string(),
-                        Datum::I64(v) => format!("{}", v).to_string(),
-                        Datum::Enum(v) => format!("{}", v).to_string(),
+                        Datum::F64(v) => format!("{v:.2}").to_string(),
+                        Datum::I64(v) => format!("{v}").to_string(),
+                        Datum::Enum(v) => format!("{v}").to_string(),
                     }
                 );
             }

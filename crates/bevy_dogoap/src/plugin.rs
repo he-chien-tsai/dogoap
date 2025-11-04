@@ -20,6 +20,6 @@ impl Plugin for DogoapPlugin {
                 )
                     .chain(),
             )
-            .register_type::<planner::Planner>();
+            .register_type::<Planner>();
     }
 }

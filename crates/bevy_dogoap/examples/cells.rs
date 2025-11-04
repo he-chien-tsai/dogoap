@@ -63,19 +63,19 @@ struct StateDebugText;
 fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
     let goal = Goal::from_reqs(&[IsReplicating::is(true)]);
 
-    let eat_action = EatAction::new()
+    let eat_action = EatAction::new_action()
         .add_precondition(AtFood::is(true))
         .add_mutator(Hunger::decrease(10.0))
         .add_mutator(AtFood::set(true))
         .set_cost(1);
 
-    let replicate_action = ReplicateAction::new()
+    let replicate_action = ReplicateAction::new_action()
         .add_precondition(Hunger::is_less(10.0))
         .add_mutator(IsReplicating::set(true))
         .add_mutator(Hunger::increase(25.0))
         .set_cost(10);
 
-    let go_to_food_action = GoToFoodAction::new()
+    let go_to_food_action = GoToFoodAction::new_action()
         .add_precondition(AtFood::is(false))
         .add_mutator(AtFood::set(true))
         .add_mutator(Hunger::increase(1.0))
@@ -234,13 +234,9 @@ fn handle_go_to_food_action(
                 }
             }
         }
-
-        let (e_food, t_food, distance) = match selected_food {
-            Some(v) => v,
-            None => {
-                // No available food found, do nothing
-                continue;
-            }
+        let Some((e_food, t_food, distance)) = selected_food else {
+            // No available food found, do nothing
+            continue;
         };
 
         targeted_food.insert(*e_food, entity);
@@ -252,7 +248,7 @@ fn handle_go_to_food_action(
             // Consume food!
             at_food.0 = true;
             commands.entity(entity).remove::<GoToFoodAction>();
-            targeted_food.remove(&e_food);
+            targeted_food.remove(e_food);
         }
     }
 }
@@ -312,18 +308,14 @@ fn handle_eat_action(
     mut query: Query<(Entity, &EatAction, &Transform, &mut Hunger, &mut AtFood), Without<Food>>,
     q_food: Query<(Entity, &Transform), With<Food>>,
 ) {
-    // println!("Query hits: {}", query.iter().len());
     for (entity, _action, t_entity, mut hunger, mut at_food) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_food.iter().map(|(e, t)| (e, *t)).collect();
         let foods = find_closest(origin, items);
         let food = foods.first();
 
-        // println!("Eating food we found at {:?}", food);
-
-        let (e_food, _t_food, distance) = match food {
-            Some(v) => v,
-            None => panic!("No food could be found, HOW?!"),
+        let Some((e_food, _t_food, distance)) = food else {
+            panic!("No food could be found, HOW?!")
         };
 
         // Make sure we're actually in range to consume this food

@@ -117,27 +117,27 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
     for i in 0..1 {
         let gold_goal = Goal::from_reqs(&[GoldAmount::is(3)]);
 
-        let sleep_action = SleepAction::new()
+        let sleep_action = SleepAction::new_action()
             .add_precondition(Energy::is_less(50.0))
             .add_precondition(AtLocation::is(Location::House))
             .add_mutator(Energy::increase(100.0))
             .set_cost(1);
 
-        let eat_action = EatAction::new()
+        let eat_action = EatAction::new_action()
             .add_precondition(Hunger::is_more(50.0))
             .add_precondition(AtLocation::is(Location::Mushroom))
             .add_mutator(Hunger::decrease(25.0))
             .add_mutator(AtLocation::set(Location::Outside))
             .set_cost(2);
 
-        let mine_ore_action = MineOreAction::new()
+        let mine_ore_action = MineOreAction::new_action()
             .add_precondition(Energy::is_more(10.0))
             .add_precondition(Hunger::is_less(75.0))
             .add_precondition(AtLocation::is(Location::Ore))
             .add_mutator(HasOre::set(true))
             .set_cost(3);
 
-        let smelt_ore_action = SmeltOreAction::new()
+        let smelt_ore_action = SmeltOreAction::new_action()
             .add_precondition(Energy::is_more(10.0))
             .add_precondition(Hunger::is_less(75.0))
             .add_precondition(AtLocation::is(Location::Smelter))
@@ -146,7 +146,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
             .add_mutator(HasMetal::set(true))
             .set_cost(4);
 
-        let sell_metal_action = SellMetalAction::new()
+        let sell_metal_action = SellMetalAction::new_action()
             .add_precondition(Energy::is_more(10.0))
             .add_precondition(Hunger::is_less(75.0))
             .add_precondition(AtLocation::is(Location::Merchant))
@@ -155,31 +155,31 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
             .add_mutator(HasMetal::set(false))
             .set_cost(5);
 
-        let go_to_outside_action = GoToOutsideAction::new()
+        let go_to_outside_action = GoToOutsideAction::new_action()
             .add_mutator(AtLocation::set(Location::Outside))
             .set_cost(1);
 
-        let go_to_house_action = GoToHouseAction::new()
+        let go_to_house_action = GoToHouseAction::new_action()
             .add_precondition(AtLocation::is(Location::Outside))
             .add_mutator(AtLocation::set(Location::House))
             .set_cost(1);
 
-        let go_to_mushroom_action = GoToMushroomAction::new()
+        let go_to_mushroom_action = GoToMushroomAction::new_action()
             .add_precondition(AtLocation::is(Location::Outside))
             .add_mutator(AtLocation::set(Location::Mushroom))
             .set_cost(2);
 
-        let go_to_ore_action = GoToOreAction::new()
+        let go_to_ore_action = GoToOreAction::new_action()
             .add_precondition(AtLocation::is(Location::Outside))
             .add_mutator(AtLocation::set(Location::Ore))
             .set_cost(3);
 
-        let go_to_smelter_action = GoToSmelterAction::new()
+        let go_to_smelter_action = GoToSmelterAction::new_action()
             .add_precondition(AtLocation::is(Location::Outside))
             .add_mutator(AtLocation::set(Location::Smelter))
             .set_cost(4);
 
-        let go_to_merchant_action = GoToMerchantAction::new()
+        let go_to_merchant_action = GoToMerchantAction::new_action()
             .add_precondition(AtLocation::is(Location::Outside))
             .add_mutator(AtLocation::set(Location::Merchant))
             .set_cost(5);
@@ -371,7 +371,7 @@ fn handle_go_to_house_action(
             Location::House,
             entity,
             &mut commands,
-        )
+        );
     }
 }
 
@@ -397,7 +397,7 @@ fn handle_go_to_smelter_action(
             Location::Smelter,
             entity,
             &mut commands,
-        )
+        );
     }
 }
 
@@ -422,7 +422,7 @@ fn handle_go_to_outside_action(
             Location::Outside,
             entity,
             &mut commands,
-        )
+        );
     }
 }
 
@@ -448,7 +448,7 @@ fn handle_go_to_merchant_action(
             Location::Merchant,
             entity,
             &mut commands,
-        )
+        );
     }
 }
 
@@ -464,11 +464,8 @@ fn handle_go_to_mushroom_action(
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_mushrooms.iter().map(|(e, t)| (e, *t)).collect();
-        let mushroom = find_closest(origin, items);
-
-        let mushroom = match mushroom {
-            Some(v) => v,
-            None => panic!("No mushroom could be found, HOW?!"),
+        let Some(mushroom) = find_closest(origin, items) else {
+            panic!("No mushroom could be found, HOW?!")
         };
 
         go_to_location::<GoToMushroomAction>(
@@ -479,7 +476,7 @@ fn handle_go_to_mushroom_action(
             Location::Mushroom,
             entity,
             &mut commands,
-        )
+        );
     }
 }
 
@@ -493,11 +490,9 @@ fn handle_go_to_ore_action(
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> =
             q_world_resource.iter().map(|(e, t)| (e, *t)).collect();
-        let closest = find_closest(origin, items);
 
-        let closest = match closest {
-            Some(v) => v,
-            None => panic!("No closest could be found, HOW?!"),
+        let Some(closest) = find_closest(origin, items) else {
+            panic!("No ore could be found, HOW?!")
         };
 
         go_to_location::<GoToOreAction>(
@@ -508,7 +503,7 @@ fn handle_go_to_ore_action(
             Location::Ore,
             entity,
             &mut commands,
-        )
+        );
     }
 }
 
@@ -528,10 +523,7 @@ fn find_closest(origin: Vec3, items: Vec<(Entity, Transform)>) -> Option<(Entity
             }
         }
     }
-    match closest {
-        Some((e, t, _f)) => Some((e, t.translation)),
-        None => None,
-    }
+    closest.map(|(e, t, _f)| (e, t.translation))
 }
 
 fn handle_eat_action(
@@ -551,14 +543,10 @@ fn handle_eat_action(
     for (entity, _action, t_entity, mut hunger, mut at_location) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_mushrooms.iter().map(|(e, t)| (e, *t)).collect();
-        let mushroom = find_closest(origin, items);
-
-        println!("Eating mushroom we found at {:?}", mushroom);
-
-        let mushroom = match mushroom {
-            Some(v) => v,
-            None => panic!("No mushroom could be found, HOW?!"),
+        let Some(mushroom) = find_closest(origin, items) else {
+            panic!("No mushroom could be found, HOW?!")
         };
+        println!("Eating mushroom we found at {mushroom:?}");
 
         hunger.0 -= 50.0;
 
@@ -645,11 +633,8 @@ fn handle_mine_ore_action(
     for (entity, _action, t_entity, mut has_ore, mut at_location, mut energy) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_ores.iter().map(|(e, t)| (e, *t)).collect();
-        let closest = find_closest(origin, items);
-
-        let closest = match closest {
-            Some(v) => v,
-            None => panic!("No ore could be found, HOW?!"),
+        let Some(closest) = find_closest(origin, items) else {
+            panic!("No ore could be found, HOW?!")
         };
 
         action_with_progress(
@@ -674,7 +659,7 @@ fn handle_mine_ore_action(
                     // If we're running out of energy before finishing, stop mining for now
                     if energy.0 <= 0.0 {
                         commands.entity(entity).remove::<MineOreAction>();
-                        energy.0 = 0.0
+                        energy.0 = 0.0;
                     }
                 }
             },
@@ -705,11 +690,8 @@ fn handle_smelt_ore_action(
     {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_smelters.iter().map(|(e, t)| (e, *t)).collect();
-        let closest = find_closest(origin, items);
-
-        let closest = match closest {
-            Some(v) => v,
-            None => panic!("No ore could be found, HOW?!"),
+        let Some(closest) = find_closest(origin, items) else {
+            panic!("No ore could be found, HOW?!")
         };
 
         action_with_progress(&mut progress, closest.0, &time, 5.0, |is_completed| {
@@ -729,7 +711,7 @@ fn handle_smelt_ore_action(
                 energy.0 -= val;
                 if energy.0 <= 0.0 {
                     commands.entity(entity).remove::<SmeltOreAction>();
-                    energy.0 = 0.0
+                    energy.0 = 0.0;
                 }
             }
         });

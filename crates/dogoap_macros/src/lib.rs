@@ -4,7 +4,7 @@ use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
-/// ActionComponent allows you to create Actions directly from your action struct
+/// `ActionComponent` allows you to create Actions directly from your action struct
 ///
 /// See [`bevy_dogoap::prelude::ActionComponent`](../bevy_dogoap/prelude/trait.ActionComponent.html) for full docs
 #[proc_macro_derive(ActionComponent)]
@@ -18,7 +18,7 @@ pub fn action_component_derive(input: TokenStream) -> TokenStream {
             fn key() -> String {
                 #snake_case_name.to_owned()
             }
-            fn new() -> Action {
+            fn new_action() -> Action {
                 Action::new(#snake_case_name)
             }
             fn action_type_name(&self) -> &'static str {
@@ -107,7 +107,7 @@ pub fn datum_component_derive(input: TokenStream) -> TokenStream {
     gen.into()
 }
 
-/// EnumComponent is specifically for DatumComponent's that use an Enum/EnumDatum
+/// `EnumComponent` is specifically for `DatumComponent`'s that use an Enum/EnumDatum
 ///
 /// They're special in the way they'll refuse to be incremented/decremented
 /// and compared with "greater" or "less".
@@ -209,7 +209,7 @@ pub fn enum_component_derive(input: TokenStream) -> TokenStream {
     gen.into()
 }
 
-/// EnumDatum implements EnumDatum trait so you can use it with an EnumComponent
+/// `EnumDatum` implements `EnumDatum` trait so you can use it with an `EnumComponent`
 ///
 /// See docs for [`EnumComponent`] for example usage
 #[proc_macro_derive(EnumDatum)]

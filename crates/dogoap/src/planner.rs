@@ -74,7 +74,7 @@ fn is_goal(node: &Node, goal: &Goal) -> bool {
         if let Some(state_val) = node.state().data.get(key) {
             compare_values(value, state_val)
         } else {
-            panic!("Couldn't find key {:#?} in LocalState", key);
+            panic!("Couldn't find key {key:#?} in LocalState");
         }
     })
 }
@@ -107,10 +107,10 @@ pub fn make_plan_with_strategy(
 #[derive(Default)]
 pub enum PlanningStrategy {
     #[default]
-    /// StartToGoal begins with our current state, and finds the most optimal path to the goal, based on the costs
-    /// Might take longer time than GoalToStart, but finds the path with the lowest cost
+    /// `StartToGoal` begins with our current state, and finds the most optimal path to the goal, based on the costs
+    /// Might take longer time than `GoalToStart`, but finds the path with the lowest cost
     StartToGoal,
-    /// GoalToStart begins with the goal state, and works backwards from there, in order to find a path as quick as possible
+    /// `GoalToStart` begins with the goal state, and works backwards from there, in order to find a path as quick as possible
     /// Might lead to less-than-optimial paths, but should find a valid path quicker
     GoalToStart,
 }
@@ -157,15 +157,15 @@ pub fn print_plan(plan: (Vec<Node>, usize)) {
             Node::State(s) => {
                 println!("\t\t= INITIAL STATE");
                 for (k, v) in &s.data {
-                    println!("\t\t{} = {}", k, v);
+                    println!("\t\t{k} = {v}");
                 }
                 last_state = s.clone();
             }
         }
         println!("\n\t\t---\n");
     }
-    println!("\t\t= FINAL STATE (COST: {})", cost);
+    println!("\t\t= FINAL STATE (COST: {cost})");
     for (k, v) in &last_state.data {
-        println!("\t\t{} = {}", k, v);
+        println!("\t\t{k} = {v}");
     }
 }
