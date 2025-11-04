@@ -113,7 +113,7 @@ struct GoldAmount(i64);
 #[derive(Component)]
 struct NeedsText;
 
-fn startup(mut commands: Commands, windows: Query<&Window>) {
+fn startup(mut commands: Commands, window: Single<&Window>) {
     for i in 0..1 {
         let gold_goal = Goal::from_reqs(&[GoldAmount::is(3)]);
 
@@ -253,7 +253,6 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
         Transform::from_translation(Vec3::new(-300.0, -50.0, 0.0)),
     ));
 
-    let window = windows.single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
@@ -287,12 +286,11 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
 
 // Spawn new mushrooms if there are less than 10
 fn spawn_random_mushroom(
-    windows: Query<&Window>,
+    window: Single<&Window>,
     mut commands: Commands,
     mushrooms: Query<Entity, With<Mushroom>>,
 ) {
     if mushrooms.iter().len() < 10 {
-        let window = windows.single().expect("Expected only one window! Wth");
         let window_height = window.height() / 2.0;
         let window_width = window.width() / 2.0;
 
@@ -309,12 +307,11 @@ fn spawn_random_mushroom(
 
 // Spawn new mushrooms if there are less than 10
 fn spawn_random_ore(
-    windows: Query<&Window>,
+    window: Single<&Window>,
     mut commands: Commands,
     ores: Query<Entity, With<Ore>>,
 ) {
     if ores.iter().len() < 10 {
-        let window = windows.single().expect("Expected only one window! Wth");
         let window_height = window.height() / 2.0;
         let window_width = window.width() / 2.0;
 
@@ -358,11 +355,9 @@ fn handle_go_to_house_action(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<(Entity, &GoToHouseAction, &mut Transform, &mut AtLocation), Without<House>>,
-    q_house: Query<&Transform, With<House>>,
+    t_house: Single<&Transform, With<House>>,
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
-        let t_house = q_house.single().expect("There should only be one house!");
-
         go_to_location::<GoToHouseAction>(
             &mut at_location,
             time.delta_secs(),
@@ -382,13 +377,9 @@ fn handle_go_to_smelter_action(
         (Entity, &GoToSmelterAction, &mut Transform, &mut AtLocation),
         Without<Smelter>,
     >,
-    q_smelter: Query<&Transform, With<Smelter>>,
+    t_smelter: Single<&Transform, With<Smelter>>,
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
-        let t_smelter = q_smelter
-            .single()
-            .expect("There should only be one smelter!");
-
         go_to_location::<GoToSmelterAction>(
             &mut at_location,
             time.delta_secs(),
@@ -405,11 +396,9 @@ fn handle_go_to_outside_action(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<(Entity, &GoToOutsideAction, &mut Transform, &mut AtLocation), Without<House>>,
-    q_house: Query<&Transform, With<House>>,
+    t_house: Single<&Transform, With<House>>,
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
-        let t_house = q_house.single().expect("There should only be one house!");
-
         // Outside is slightly to the left of the house... Fight me
         let offset = Vec3::new(-30.0, 0.0, 0.0);
         let new_pos = t_house.translation + offset;
@@ -433,13 +422,9 @@ fn handle_go_to_merchant_action(
         (Entity, &GoToMerchantAction, &mut Transform, &mut AtLocation),
         Without<Merchant>,
     >,
-    q_destination: Query<&Transform, With<Merchant>>,
+    t_destination: Single<&Transform, With<Merchant>>,
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
-        let t_destination = q_destination
-            .single()
-            .expect("There should only be one merchant!");
-
         go_to_location::<GoToMerchantAction>(
             &mut at_location,
             time.delta_secs(),
@@ -882,9 +867,9 @@ fn print_current_local_state(
 fn draw_gizmos(
     mut gizmos: Gizmos,
     q_miner: Query<&Transform, With<Miner>>,
-    q_house: Query<&Transform, With<House>>,
-    q_smelter: Query<&Transform, With<Smelter>>,
-    q_merchant: Query<&Transform, With<Merchant>>,
+    t_house: Single<&Transform, With<House>>,
+    t_smelter: Single<&Transform, With<Smelter>>,
+    t_merchant: Single<&Transform, With<Merchant>>,
     q_mushrooms: Query<&Transform, With<Mushroom>>,
     q_ore: Query<&Transform, With<Ore>>,
 ) {
@@ -903,22 +888,18 @@ fn draw_gizmos(
     }
 
     gizmos.rect_2d(
-        q_house.single().unwrap().translation.truncate(),
+        t_house.translation.truncate(),
         Vec2::new(40.0, 80.0),
         AQUAMARINE,
     );
 
     gizmos.rect_2d(
-        q_smelter.single().unwrap().translation.truncate(),
+        t_smelter.translation.truncate(),
         Vec2::new(30.0, 30.0),
         YELLOW_GREEN,
     );
 
-    gizmos.circle_2d(
-        q_merchant.single().unwrap().translation.truncate(),
-        16.,
-        GOLD,
-    );
+    gizmos.circle_2d(t_merchant.translation.truncate(), 16., GOLD);
 
     for mushroom_transform in q_mushrooms.iter() {
         gizmos.circle_2d(mushroom_transform.translation.truncate(), 4., GREEN_YELLOW);

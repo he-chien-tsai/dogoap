@@ -124,8 +124,7 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
         });
 }
 
-fn startup(mut commands: Commands, windows: Query<&Window>) {
-    let window = windows.single().expect("Expected only one window! Wth");
+fn startup(mut commands: Commands, window: Single<&Window>) {
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
@@ -152,11 +151,10 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
 }
 
 fn spawn_random_food(
-    windows: Query<&Window>,
+    window: Single<&Window>,
     mut commands: Commands,
     q_food: Query<Entity, With<Food>>,
 ) {
-    let window = windows.single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
