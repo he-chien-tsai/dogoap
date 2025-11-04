@@ -58,7 +58,7 @@ pub trait DatumComponent: Send + Sync {
     fn field_value(&self) -> Datum;
 }
 
-/// ActionComponent allows you to create Actions directly from your action struct
+/// `ActionComponent` allows you to create Actions directly from your action struct
 ///
 /// Can be derived with `#derive(ActionComponent)`
 ///
@@ -89,11 +89,11 @@ pub trait DatumComponent: Send + Sync {
 #[bevy_trait_query::queryable]
 #[reflect_trait]
 pub trait ActionComponent: Send + Sync {
-    /// Gets the action key but in snake_case ("AtLocation" becomes "at_location")
+    /// Gets the action key but in `snake_case` ("`AtLocation`" becomes "`at_location`")
     fn key() -> String
     where
         Self: Sized;
-    /// Creates a new [`Action`] with our snake_case key
+    /// Creates a new [`Action`] with our `snake_case` key
     fn action() -> Action
     where
         Self: Sized;
