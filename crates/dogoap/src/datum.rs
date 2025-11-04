@@ -82,10 +82,10 @@ impl Display for Datum {
     }
 }
 
-impl Add for &Datum {
+impl Add for Datum {
     type Output = Datum;
 
-    fn add(self, other: &Datum) -> Datum {
+    fn add(self, other: Datum) -> Datum {
         match (self, other) {
             (Datum::I64(a), Datum::I64(b)) => Datum::I64(a + b),
             (Datum::F64(a), Datum::F64(b)) => Datum::F64(a + b),
@@ -94,33 +94,15 @@ impl Add for &Datum {
     }
 }
 
-impl Add for Datum {
+impl Sub for Datum {
     type Output = Datum;
 
-    #[expect(clippy::op_ref)]
-    fn add(self, other: Datum) -> Datum {
-        &self + &other
-    }
-}
-
-impl Sub for &Datum {
-    type Output = Datum;
-
-    fn sub(self, other: &Datum) -> Datum {
+    fn sub(self, other: Datum) -> Datum {
         match (self, other) {
             (Datum::I64(a), Datum::I64(b)) => Datum::I64(a - b),
             (Datum::F64(a), Datum::F64(b)) => Datum::F64(a - b),
             _ => panic!("Unsupported negation between Datum variants, {self:?} - {other:?}"),
         }
-    }
-}
-
-impl Sub for Datum {
-    type Output = Datum;
-
-    #[expect(clippy::op_ref)]
-    fn sub(self, other: Datum) -> Datum {
-        &self - &other
     }
 }
 

@@ -35,6 +35,7 @@ syn = { version = "2.0.108", features = ["full"] }
 quote = "1.0.41"
 proc-macro2 = "1.0.103"
 criterion = { version = "0.5", features = ["html_reports"] }
+crossbeam-channel = "0.5"
 
 # for running examples
 bevy = { version = "0.17.2", default-features = true }
@@ -60,8 +61,8 @@ ptr_as_ptr = "warn"
 ptr_cast_constness = "warn"
 ref_as_ptr = "warn"
 too_long_first_doc_paragraph = "allow"
-#allow_attributes = "warn"
-#allow_attributes_without_reason = "warn"
+allow_attributes = "warn"
+allow_attributes_without_reason = "warn"
 
 [profile.dev.package."*"]
 inherits = "dev"

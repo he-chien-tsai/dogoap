@@ -159,16 +159,6 @@ mod test {
         assert_eq!(*found_val, expected_val);
     }
 
-    #[expect(dead_code)]
-    fn assert_component_exists<T>(app: &mut App)
-    where
-        T: Component,
-    {
-        let mut query = app.world_mut().query::<&T>();
-        let c = query.iter(app.world()).len();
-        assert!(c > 0);
-    }
-
     fn assert_component_not_exists<T>(app: &mut App)
     where
         T: Component,
