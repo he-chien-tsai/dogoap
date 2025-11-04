@@ -1,5 +1,5 @@
 use crate::planner;
-use bevy::prelude::*;
+use crate::prelude::*;
 
 /// Setups the [`Planner`](planner::Planner) systems to run at
 /// [`PreUpdate`](bevy::prelude::PreUpdate)

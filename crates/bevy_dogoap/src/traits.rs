@@ -1,8 +1,7 @@
 use std::fmt;
 
-use bevy::prelude::{reflect_trait, Commands, Component, Entity};
-
-use dogoap::prelude::{Action, Compare, Datum, Mutator};
+use crate::prelude::*;
+use dogoap::prelude::*;
 
 /// A [`Component`] that can insert/remove itself to/from an Entity
 /// Used for adding/removing current [`Action`] our planner tells us to perform

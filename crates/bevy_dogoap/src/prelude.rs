@@ -15,3 +15,8 @@ pub use crate::traits::{
 };
 
 pub use dogoap_macros::{ActionComponent, DatumComponent, EnumComponent, EnumDatum};
+
+pub(crate) use bevy_app::prelude::*;
+pub(crate) use bevy_ecs::prelude::*;
+pub(crate) use bevy_log::prelude::*;
+pub(crate) use bevy_reflect::prelude::*;

@@ -1,18 +1,15 @@
-#![cfg_attr(rustfmt, rustfmt_skip)]
-use std::collections::VecDeque;
-
-use std::{collections::HashMap, fmt};
-
-use bevy::prelude::*;
+use crate::prelude::*;
+use alloc::collections::VecDeque;
+use bevy_platform::collections::HashMap;
+use core::fmt;
 
 #[cfg(feature = "compute-pool")]
 use {
+    bevy_tasks::futures_lite::future,
+    bevy_tasks::{AsyncComputeTaskPool, Task},
     std::time::Instant,
-    bevy::tasks::futures_lite::future,
-    bevy::tasks::{AsyncComputeTaskPool, Task}
 };
 
-use crate::prelude::*;
 use dogoap::prelude::*;
 
 // TODO can we replace this with ActionComponent perhaps? Should be able to
