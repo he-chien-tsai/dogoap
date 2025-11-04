@@ -22,7 +22,7 @@ struct IsHungry(bool);
 struct IsTired(bool);
 
 // This is our ActionComponent that gets added whenever the planner thinks
-// the entity need to perform the action in order to reach the goal
+// the entity needs to perform the action in order to reach the goal
 #[derive(Component, Reflect, Clone, Default, ActionComponent)]
 struct EatAction;
 
@@ -43,7 +43,10 @@ fn startup(mut commands: Commands) {
     // No preconditions in order to sleep
     let sleep_action = SleepAction::action().add_mutator(IsTired::set(false));
 
-    // This create_planner! macro doesn't yet exists
+    // Create the planner that
+    // - registers our actions
+    // - initializes the state
+    // - registers our goal(s)
     let (planner, components) = create_planner!({
         actions: [
             (EatAction, eat_action),
@@ -56,7 +59,7 @@ fn startup(mut commands: Commands) {
     // To spawn the planner, we first create a new entity
     // You can also use an existing entity if you have one at hand
     // This will usually be whatever Entity you use for your NPC
-    commands.spawn((Name::new("Planner"), planner, components));
+    commands.spawn((Name::new("NPC"), planner, components));
 }
 
 // These two systems are regular Bevy systems. Looks for Entities that have
@@ -64,9 +67,9 @@ fn startup(mut commands: Commands) {
 // component with one that says `false`
 fn handle_eat_action(
     mut commands: Commands,
-    mut query: Query<(Entity, &EatAction, &mut IsHungry)>,
+    mut query: Query<(Entity, &mut IsHungry), With<EatAction>>,
 ) {
-    for (entity, _eat_action, mut need) in query.iter_mut() {
+    for (entity, mut need) in query.iter_mut() {
         *need = IsHungry(false);
         commands.entity(entity).remove::<EatAction>();
         info!("IsHungry been set to false and removed EatAction");
@@ -76,9 +79,9 @@ fn handle_eat_action(
 // Same goes for the sleep_action, but with SleepAction and IsTired
 fn handle_sleep_action(
     mut commands: Commands,
-    mut query: Query<(Entity, &SleepAction, &mut IsTired)>,
+    mut query: Query<(Entity, &mut IsTired), With<SleepAction>>,
 ) {
-    for (entity, _sleep_action, mut need) in query.iter_mut() {
+    for (entity, mut need) in query.iter_mut() {
         *need = IsTired(false);
         commands.entity(entity).remove::<SleepAction>();
         info!("IsTired been set to false and removed SleepAction");
