@@ -130,15 +130,16 @@ pub fn update_planner_local_state(
 /// and creates a new task for generating a new plan
 pub fn create_planner_tasks(
     mut commands: Commands,
-    query: Query<(Entity, &Planner), Without<ComputePlan>>,
+    mut query: Query<(Entity, &mut Planner), Without<ComputePlan>>,
 ) {
     #[cfg(feature = "compute-pool")]
     let thread_pool = AsyncComputeTaskPool::get();
 
-    for (entity, planner) in query.iter() {
-        if planner.always_plan
+    for (entity, mut planner) in query.iter_mut() {
+        if (planner.always_plan || planner.plan_next_tick)
             && let Some(goal) = planner.current_goal.clone()
         {
+            planner.plan_next_tick = false;
             let state = planner.state.clone();
             let actions = planner.actions_for_dogoap.clone();
 
