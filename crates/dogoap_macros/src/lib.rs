@@ -20,7 +20,7 @@ pub fn action_component_derive(input: TokenStream) -> TokenStream {
             fn key() -> String {
                 #snake_case_name.to_owned()
             }
-            fn new_action() -> Action {
+            fn action() -> Action {
                 Action::new(#snake_case_name)
             }
             fn action_type_name(&self) -> &'static str {

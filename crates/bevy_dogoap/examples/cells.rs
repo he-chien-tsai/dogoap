@@ -63,19 +63,19 @@ struct StateDebugText;
 fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
     let goal = Goal::from_reqs(&[IsReplicating::is(true)]);
 
-    let eat_action = EatAction::new_action()
+    let eat_action = EatAction::action()
         .add_precondition(AtFood::is(true))
         .add_mutator(Hunger::decrease(10.0))
         .add_mutator(AtFood::set(true))
         .set_cost(1);
 
-    let replicate_action = ReplicateAction::new_action()
+    let replicate_action = ReplicateAction::action()
         .add_precondition(Hunger::is_less(10.0))
         .add_mutator(IsReplicating::set(true))
         .add_mutator(Hunger::increase(25.0))
         .set_cost(10);
 
-    let go_to_food_action = GoToFoodAction::new_action()
+    let go_to_food_action = GoToFoodAction::action()
         .add_precondition(AtFood::is(false))
         .add_mutator(AtFood::set(true))
         .add_mutator(Hunger::increase(1.0))

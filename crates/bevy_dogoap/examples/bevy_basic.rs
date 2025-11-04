@@ -35,13 +35,13 @@ fn startup(mut commands: Commands) {
 
     // Our first action, the eat action, that sets is_hungry to false
     // but requires is_tired to be set to false first
-    let eat_action = EatAction::new_action()
+    let eat_action = EatAction::action()
         .add_precondition(IsTired::is(false))
         .add_mutator(IsHungry::set(false));
 
     // Our first action, the sleep action, that sets is_tired to false
     // No preconditions in order to sleep
-    let sleep_action = SleepAction::new_action().add_mutator(IsTired::set(false));
+    let sleep_action = SleepAction::action().add_mutator(IsTired::set(false));
 
     // This create_planner! macro doesn't yet exists
     let (planner, components) = create_planner!({

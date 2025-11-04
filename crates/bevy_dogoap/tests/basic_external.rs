@@ -21,12 +21,12 @@ fn startup(mut commands: Commands) {
     let goal = Goal::from_reqs(&[IsHungry::is(false), IsTired::is(false)]);
 
     // Alternatively, the `simple` functions can help you create things a bit smoother
-    let eat_action = EatAction::new_action()
+    let eat_action = EatAction::action()
         .add_precondition(IsTired::is(false))
         .add_mutator(IsHungry::set(false));
 
     // Here we define our SleepAction
-    let sleep_action = SleepAction::new_action().add_mutator(IsTired::set(false));
+    let sleep_action = SleepAction::action().add_mutator(IsTired::set(false));
 
     // But we have a handy macro that kind of makes it a lot easier for us!
     // let actions_map = create_action_map!((EatAction, eat_action), (SleepAction, sleep_action));
@@ -74,6 +74,10 @@ fn handle_sleep_action(
 }
 
 mod test {
+    use std::time::Duration;
+
+    use bevy::time::TimeUpdateStrategy;
+
     use super::*;
 
     // Test utils
@@ -109,17 +113,20 @@ mod test {
         register_components!(app, vec![IsHungry, IsTired]);
 
         app.add_plugins(DogoapPlugin);
-        app.add_plugins(TaskPoolPlugin {
-            task_pool_options: TaskPoolOptions::with_num_threads(1),
-        });
-        app.init_resource::<Time>();
+        app.add_plugins(MinimalPlugins);
+        app.insert_resource(TimeUpdateStrategy::ManualDuration(
+            Time::<Fixed>::default().timestep(),
+        ));
 
         app.add_systems(Startup, startup);
         app.add_systems(Update, (handle_eat_action, handle_sleep_action));
 
-        // Make sure to run tests with --no-default-features to disable AsyncTaskPool
+        app.finish();
+        app.update();
+
         for _i in 0..3 {
             app.update();
+            std::thread::sleep(Duration::from_millis(200));
         }
 
         println!("Final State:\n{:#?}", get_state(&mut app));

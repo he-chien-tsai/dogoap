@@ -173,9 +173,7 @@ pub fn create_planner_tasks(
 }
 
 #[cfg(not(feature = "compute-pool"))]
-fn grab_plan_from_task(
-    task: &mut Task<Option<(Vec<dogoap::prelude::Node>, usize)>>,
-) -> Option<(Vec<dogoap::prelude::Node>, usize)> {
+fn grab_plan_from_task(task: &mut Task<Option<(Vec<Node>, usize)>>) -> Option<(Vec<Node>, usize)> {
     task.0.clone()
 }
 

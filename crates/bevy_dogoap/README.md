@@ -24,7 +24,7 @@ fn startup(mut commands: Commands) {
     let goal = Goal::from_reqs(&[IsHungry::is(false)]);
 
     // Create our action from EatAction
-    let eat_action = EatAction::new()
+    let eat_action = EatAction::action()
         // Mutators define what happens when this action is executed
         // In this case, we set IsHungry to false
         .add_mutator(IsHungry::set(false));

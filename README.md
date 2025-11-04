@@ -41,7 +41,7 @@ fn setup(mut commands: Commands) {
     let goal = Goal::from_reqs(&[IsHungry::is(false)]);
 
     // Here we declare that the result of perfoming EatAction is that IsHungry gets set to false
-    let eat_action = EatAction::new().add_mutator(IsHungry::set(false));
+    let eat_action = EatAction::action().add_mutator(IsHungry::set(false));
 
     // Creating the planner with everything together gives us Components we can use with Bevy
     let (planner, components) = create_planner!({

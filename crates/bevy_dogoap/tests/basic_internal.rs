@@ -138,6 +138,10 @@ fn handle_sleep_action(
 }
 
 mod test {
+    use std::time::Duration;
+
+    use bevy::time::TimeUpdateStrategy;
+
     use super::*;
 
     // Test utils
@@ -178,17 +182,20 @@ mod test {
         app.register_component_as::<dyn DatumComponent, IsTired>();
 
         app.add_plugins(DogoapPlugin);
-        app.add_plugins(TaskPoolPlugin {
-            task_pool_options: TaskPoolOptions::with_num_threads(1),
-        });
-        app.init_resource::<Time>();
+        app.add_plugins(MinimalPlugins);
+        app.insert_resource(TimeUpdateStrategy::ManualDuration(
+            Time::<Fixed>::default().timestep(),
+        ));
 
         app.add_systems(Startup, startup);
         app.add_systems(Update, (handle_eat_action, handle_sleep_action));
 
-        // Make sure to run tests with --no-default-features to disable AsyncTaskPool
+        app.finish();
+        app.update();
+
         for _i in 0..3 {
             app.update();
+            std::thread::sleep(Duration::from_millis(200));
         }
 
         assert_key_is_bool(&mut app, IS_HUNGRY_KEY, false);

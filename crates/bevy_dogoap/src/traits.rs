@@ -71,7 +71,7 @@ pub trait DatumComponent: Send + Sync {
 ///
 /// // Used as a shorter way of creating a new Action with snake_case name
 /// assert_eq!(
-///     DrinkAction::new(),
+///     DrinkAction::action(),
 ///     Action::new("drink_action")
 /// );
 /// ```
@@ -94,7 +94,7 @@ pub trait ActionComponent: Send + Sync {
     where
         Self: Sized;
     /// Creates a new [`Action`] with our snake_case key
-    fn new_action() -> Action
+    fn action() -> Action
     where
         Self: Sized;
     /// Returns the type name

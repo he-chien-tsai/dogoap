@@ -214,32 +214,32 @@ fn setup(mut commands: Commands) {
         let goal = Goal::from_reqs(&[Thirst::is_less(1.0)]);
 
         // Requires us to carry a lemonade, results in us having 10 less thirst + carrying Nothing
-        let drink_lemonade_action = DrinkLemonade::new_action()
+        let drink_lemonade_action = DrinkLemonade::action()
             .add_precondition(CarryingItem::is(Item::Lemonade))
             .add_mutator(CarryingItem::set(Item::Nothing))
             .add_mutator(Thirst::decrease(10.0));
 
         // Requires us to not be carrying nothing, and leads to us having a lemonade
-        let pickup_lemonade_action = PickupLemonade::new_action()
+        let pickup_lemonade_action = PickupLemonade::action()
             .add_precondition(CarryingItem::is(Item::Nothing))
             .add_precondition(OrderReady::is(true))
             .add_precondition(AtOrderDesk::is(true))
             .add_mutator(CarryingItem::set(Item::Lemonade));
 
         // Requires us to having placed an order, order not yet ready and we're at the order desk
-        let wait_for_order_action = WaitForOrder::new_action()
+        let wait_for_order_action = WaitForOrder::action()
             .add_precondition(PlacedOrder::is(true))
             .add_precondition(OrderReady::is(false))
             .add_precondition(AtOrderDesk::is(true))
             .add_mutator(OrderReady::set(true));
 
         // Requires us to not having placed an order previously, and we're at the ordering desk
-        let place_order_action = PlaceOrder::new_action()
+        let place_order_action = PlaceOrder::action()
             .add_precondition(PlacedOrder::is(false))
             .add_precondition(AtOrderDesk::is(true))
             .add_mutator(PlacedOrder::set(true));
 
-        let go_to_order_desk_action = GoToOrderDesk::new_action()
+        let go_to_order_desk_action = GoToOrderDesk::action()
             .add_precondition(AtOrderDesk::is(false))
             .add_mutator(AtOrderDesk::set(true));
 
@@ -302,25 +302,25 @@ fn setup(mut commands: Commands) {
         // let goal = Goal::from_reqs(&[Energy::is_more(1.0), ServedOrder::is(true)]);
         let goal = Goal::from_reqs(&[AtOrderDesk::is(true)]);
 
-        let serve_order_action = ServeOrder::new_action()
+        let serve_order_action = ServeOrder::action()
             .add_precondition(CarryingItem::is(Item::Lemonade))
             .add_precondition(AtOrderDesk::is(true))
             .add_mutator(ServedOrder::set(true));
 
-        let produce_lemonade_action = ProduceLemonade::new_action()
+        let produce_lemonade_action = ProduceLemonade::action()
             .add_precondition(CarryingItem::is(Item::Nothing))
             .add_precondition(AtLemonadeMaker::is(true))
             .add_mutator(CarryingItem::set(Item::Lemonade));
 
-        let go_to_lemonade_maker_action = GoToLemonadeMaker::new_action()
+        let go_to_lemonade_maker_action = GoToLemonadeMaker::action()
             .add_precondition(AtLemonadeMaker::is(false))
             .add_mutator(AtLemonadeMaker::set(true));
 
-        let rest_action = Rest::new_action()
+        let rest_action = Rest::action()
             .add_precondition(Energy::is_less(10.0))
             .add_mutator(Energy::increase(50.0));
 
-        let go_to_order_desk_action = GoToOrderDesk::new_action()
+        let go_to_order_desk_action = GoToOrderDesk::action()
             .add_precondition(AtOrderDesk::is(false))
             .add_precondition(ShouldGoToOrderDesk::is(true))
             .add_mutator(AtOrderDesk::set(true));
