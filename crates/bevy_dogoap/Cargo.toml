@@ -11,36 +11,32 @@ default = ["compute-pool"]
 compute-pool = ["dep:bevy_tasks"]
 
 [dependencies]
-bevy_ecs = { version = "0.17", default-features = false }
-bevy_app = { version = "0.17", default-features = false }
-bevy_log = { version = "0.17", default-features = false }
-bevy_reflect = { version = "0.17", default-features = false }
-bevy_platform = { version = "0.17", default-features = false }
-bevy_tasks = { version = "0.17", default-features = false, optional = true }
-bevy-trait-query = { version = "0.17.1" }
-dogoap = { path = "../dogoap", version = "0.6.0" }
-dogoap_macros = { path = "../dogoap_macros", version = "0.6.0" }
-rand = "0.9.2"
+bevy_ecs = { workspace = true }
+bevy_app = { workspace = true }
+bevy_log = { workspace = true }
+bevy_reflect = { workspace = true }
+bevy_platform = { workspace = true }
+bevy_tasks = { workspace = true, optional = true }
+bevy-trait-query = { workspace = true }
+dogoap = { workspace = true }
+dogoap_macros = { workspace = true}
+rand = { workspace = true}
 
 [dev-dependencies]
-bevy = { version = "0.17.2", default-features = true }
+bevy = { workspace = true }
 
 [[example]]
 name = "bevy_basic"
 path = "examples/bevy_basic.rs"
-required-features = ["bevy_winit"]
 
 [[example]]
 name = "cells"
 path = "examples/cells.rs"
-required-features = ["bevy_winit", "bevy_sprite"]
 
 [[example]]
 name = "miner"
 path = "examples/miner.rs"
-required-features = ["bevy_winit", "bevy_sprite"]
 
 [[example]]
 name = "resman"
 path = "examples/resman.rs"
-required-features = ["bevy_winit", "bevy_sprite"]

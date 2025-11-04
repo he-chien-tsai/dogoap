@@ -2128,7 +2128,6 @@ name = "dogoap"
 version = "0.6.0"
 dependencies = [
  "bevy_reflect",
- "log",
  "pathfinding",
 ]
 

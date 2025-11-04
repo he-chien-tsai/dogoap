@@ -7,10 +7,8 @@ license = "MIT"
 homepage = "https://github.com/victorb/dogoap"
 
 [dependencies]
-bevy_reflect = "0.17.2"
-log = "0.4.28"
-pathfinding = "4.14.0"
-
+bevy_reflect = { workspace = true }
+pathfinding = { workspace = true }
 
 [features]
 # Define a feature for nightly usage
