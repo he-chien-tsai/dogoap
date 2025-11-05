@@ -118,70 +118,70 @@ fn startup(mut commands: Commands, window: Single<&Window>) {
         let gold_goal = Goal::from_reqs(&[GoldAmount::is(3)]);
 
         let sleep_action = SleepAction::action()
-            .add_precondition(Energy::is_less(50.0))
-            .add_precondition(AtLocation::is(Location::House))
-            .add_mutator(Energy::increase(100.0))
+            .with_precondition(Energy::is_less(50.0))
+            .with_precondition(AtLocation::is(Location::House))
+            .with_mutator(Energy::increase(100.0))
             .set_cost(1);
 
         let eat_action = EatAction::action()
-            .add_precondition(Hunger::is_more(50.0))
-            .add_precondition(AtLocation::is(Location::Mushroom))
-            .add_mutator(Hunger::decrease(25.0))
-            .add_mutator(AtLocation::set(Location::Outside))
+            .with_precondition(Hunger::is_more(50.0))
+            .with_precondition(AtLocation::is(Location::Mushroom))
+            .with_mutator(Hunger::decrease(25.0))
+            .with_mutator(AtLocation::set(Location::Outside))
             .set_cost(2);
 
         let mine_ore_action = MineOreAction::action()
-            .add_precondition(Energy::is_more(10.0))
-            .add_precondition(Hunger::is_less(75.0))
-            .add_precondition(AtLocation::is(Location::Ore))
-            .add_mutator(HasOre::set(true))
+            .with_precondition(Energy::is_more(10.0))
+            .with_precondition(Hunger::is_less(75.0))
+            .with_precondition(AtLocation::is(Location::Ore))
+            .with_mutator(HasOre::set(true))
             .set_cost(3);
 
         let smelt_ore_action = SmeltOreAction::action()
-            .add_precondition(Energy::is_more(10.0))
-            .add_precondition(Hunger::is_less(75.0))
-            .add_precondition(AtLocation::is(Location::Smelter))
-            .add_precondition(HasOre::is(true))
-            .add_mutator(HasOre::set(false))
-            .add_mutator(HasMetal::set(true))
+            .with_precondition(Energy::is_more(10.0))
+            .with_precondition(Hunger::is_less(75.0))
+            .with_precondition(AtLocation::is(Location::Smelter))
+            .with_precondition(HasOre::is(true))
+            .with_mutator(HasOre::set(false))
+            .with_mutator(HasMetal::set(true))
             .set_cost(4);
 
         let sell_metal_action = SellMetalAction::action()
-            .add_precondition(Energy::is_more(10.0))
-            .add_precondition(Hunger::is_less(75.0))
-            .add_precondition(AtLocation::is(Location::Merchant))
-            .add_precondition(HasMetal::is(true))
-            .add_mutator(GoldAmount::increase(1))
-            .add_mutator(HasMetal::set(false))
+            .with_precondition(Energy::is_more(10.0))
+            .with_precondition(Hunger::is_less(75.0))
+            .with_precondition(AtLocation::is(Location::Merchant))
+            .with_precondition(HasMetal::is(true))
+            .with_mutator(GoldAmount::increase(1))
+            .with_mutator(HasMetal::set(false))
             .set_cost(5);
 
         let go_to_outside_action = GoToOutsideAction::action()
-            .add_mutator(AtLocation::set(Location::Outside))
+            .with_mutator(AtLocation::set(Location::Outside))
             .set_cost(1);
 
         let go_to_house_action = GoToHouseAction::action()
-            .add_precondition(AtLocation::is(Location::Outside))
-            .add_mutator(AtLocation::set(Location::House))
+            .with_precondition(AtLocation::is(Location::Outside))
+            .with_mutator(AtLocation::set(Location::House))
             .set_cost(1);
 
         let go_to_mushroom_action = GoToMushroomAction::action()
-            .add_precondition(AtLocation::is(Location::Outside))
-            .add_mutator(AtLocation::set(Location::Mushroom))
+            .with_precondition(AtLocation::is(Location::Outside))
+            .with_mutator(AtLocation::set(Location::Mushroom))
             .set_cost(2);
 
         let go_to_ore_action = GoToOreAction::action()
-            .add_precondition(AtLocation::is(Location::Outside))
-            .add_mutator(AtLocation::set(Location::Ore))
+            .with_precondition(AtLocation::is(Location::Outside))
+            .with_mutator(AtLocation::set(Location::Ore))
             .set_cost(3);
 
         let go_to_smelter_action = GoToSmelterAction::action()
-            .add_precondition(AtLocation::is(Location::Outside))
-            .add_mutator(AtLocation::set(Location::Smelter))
+            .with_precondition(AtLocation::is(Location::Outside))
+            .with_mutator(AtLocation::set(Location::Smelter))
             .set_cost(4);
 
         let go_to_merchant_action = GoToMerchantAction::action()
-            .add_precondition(AtLocation::is(Location::Outside))
-            .add_mutator(AtLocation::set(Location::Merchant))
+            .with_precondition(AtLocation::is(Location::Outside))
+            .with_mutator(AtLocation::set(Location::Merchant))
             .set_cost(5);
 
         let (planner, components) = create_planner!({

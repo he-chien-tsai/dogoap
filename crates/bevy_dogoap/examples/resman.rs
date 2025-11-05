@@ -223,33 +223,33 @@ fn setup(mut commands: Commands) {
 
         // Requires us to carry a lemonade, results in us having 10 less thirst + carrying Nothing
         let drink_lemonade_action = DrinkLemonade::action()
-            .add_precondition(CarryingItem::is(Item::Lemonade))
-            .add_mutator(CarryingItem::set(Item::Nothing))
-            .add_mutator(Thirst::decrease(10.0));
+            .with_precondition(CarryingItem::is(Item::Lemonade))
+            .with_mutator(CarryingItem::set(Item::Nothing))
+            .with_mutator(Thirst::decrease(10.0));
 
         // Requires us to not be carrying nothing, and leads to us having a lemonade
         let pickup_lemonade_action = PickupLemonade::action()
-            .add_precondition(CarryingItem::is(Item::Nothing))
-            .add_precondition(OrderReady::is(true))
-            .add_precondition(AtOrderDesk::is(true))
-            .add_mutator(CarryingItem::set(Item::Lemonade));
+            .with_precondition(CarryingItem::is(Item::Nothing))
+            .with_precondition(OrderReady::is(true))
+            .with_precondition(AtOrderDesk::is(true))
+            .with_mutator(CarryingItem::set(Item::Lemonade));
 
         // Requires us to having placed an order, order not yet ready and we're at the order desk
         let wait_for_order_action = WaitForOrder::action()
-            .add_precondition(PlacedOrder::is(true))
-            .add_precondition(OrderReady::is(false))
-            .add_precondition(AtOrderDesk::is(true))
-            .add_mutator(OrderReady::set(true));
+            .with_precondition(PlacedOrder::is(true))
+            .with_precondition(OrderReady::is(false))
+            .with_precondition(AtOrderDesk::is(true))
+            .with_mutator(OrderReady::set(true));
 
         // Requires us to not having placed an order previously, and we're at the ordering desk
         let place_order_action = PlaceOrder::action()
-            .add_precondition(PlacedOrder::is(false))
-            .add_precondition(AtOrderDesk::is(true))
-            .add_mutator(PlacedOrder::set(true));
+            .with_precondition(PlacedOrder::is(false))
+            .with_precondition(AtOrderDesk::is(true))
+            .with_mutator(PlacedOrder::set(true));
 
         let go_to_order_desk_action = GoToOrderDesk::action()
-            .add_precondition(AtOrderDesk::is(false))
-            .add_mutator(AtOrderDesk::set(true));
+            .with_precondition(AtOrderDesk::is(false))
+            .with_mutator(AtOrderDesk::set(true));
 
         let (planner, components) = create_planner!({
             actions: [
@@ -308,31 +308,31 @@ fn setup(mut commands: Commands) {
         let idle_goal = Goal::from_reqs(&[Idling::is(true)]);
 
         let serve_order_action = ServeOrder::action()
-            .add_precondition(CarryingItem::is(Item::Lemonade))
-            .add_precondition(AtOrderDesk::is(true))
-            .add_mutator(ServedOrder::set(true));
+            .with_precondition(CarryingItem::is(Item::Lemonade))
+            .with_precondition(AtOrderDesk::is(true))
+            .with_mutator(ServedOrder::set(true));
 
         let produce_lemonade_action = ProduceLemonade::action()
-            .add_precondition(CarryingItem::is(Item::Nothing))
-            .add_precondition(AtLemonadeMaker::is(true))
-            .add_mutator(CarryingItem::set(Item::Lemonade));
+            .with_precondition(CarryingItem::is(Item::Nothing))
+            .with_precondition(AtLemonadeMaker::is(true))
+            .with_mutator(CarryingItem::set(Item::Lemonade));
 
         let go_to_lemonade_maker_action = GoToLemonadeMaker::action()
-            .add_precondition(AtLemonadeMaker::is(false))
-            .add_mutator(AtLemonadeMaker::set(true));
+            .with_precondition(AtLemonadeMaker::is(false))
+            .with_mutator(AtLemonadeMaker::set(true));
 
         let rest_action = Rest::action()
-            .add_precondition(Energy::is_less(10.0))
-            .add_mutator(Energy::increase(50.0));
+            .with_precondition(Energy::is_less(10.0))
+            .with_mutator(Energy::increase(50.0));
 
         let go_to_order_desk_action = GoToOrderDesk::action()
-            .add_precondition(AtOrderDesk::is(false))
-            .add_precondition(ShouldGoToOrderDesk::is(true))
-            .add_mutator(AtOrderDesk::set(true));
+            .with_precondition(AtOrderDesk::is(false))
+            .with_precondition(ShouldGoToOrderDesk::is(true))
+            .with_mutator(AtOrderDesk::set(true));
 
         let idle = Idle::action()
-            .add_precondition(Idling::is(false))
-            .add_mutator(Idling::set(true));
+            .with_precondition(Idling::is(false))
+            .with_mutator(Idling::set(true));
 
         let (planner, components) = create_planner!({
             actions: [

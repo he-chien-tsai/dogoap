@@ -86,7 +86,7 @@ mod test {
     fn test_check_preconditions_true() {
         let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
         let action =
-            Action::default().with_precondition("is_hungry", Compare::Equals(Datum::Bool(true)));
+            Action::default().with_precondition(("is_hungry", Compare::Equals(Datum::Bool(true))));
 
         let result = check_preconditions(&state, &action);
         assert!(result);
@@ -96,7 +96,7 @@ mod test {
     fn test_check_preconditions_false() {
         let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
         let action =
-            Action::default().with_precondition("is_hungry", Compare::Equals(Datum::Bool(false)));
+            Action::default().with_precondition(("is_hungry", Compare::Equals(Datum::Bool(false))));
 
         let result = check_preconditions(&state, &action);
         assert!(!result);
@@ -108,16 +108,16 @@ mod test {
 
         // False + True
         let action = Action::default()
-            .with_precondition("is_hungry", Compare::Equals(Datum::Bool(false)))
-            .with_precondition("is_hungry", Compare::Equals(Datum::Bool(true)));
+            .with_precondition(("is_hungry", Compare::Equals(Datum::Bool(false))))
+            .with_precondition(("is_hungry", Compare::Equals(Datum::Bool(true))));
 
         let result = check_preconditions(&state, &action);
         assert!(!result);
 
         // True + False
         let action = Action::default()
-            .with_precondition("is_hungry", Compare::Equals(Datum::Bool(true)))
-            .with_precondition("is_hungry", Compare::Equals(Datum::Bool(false)));
+            .with_precondition(("is_hungry", Compare::Equals(Datum::Bool(true))))
+            .with_precondition(("is_hungry", Compare::Equals(Datum::Bool(false))));
 
         let result = check_preconditions(&state, &action);
         assert!(!result);

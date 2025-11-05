@@ -1,3 +1,4 @@
+#![expect(missing_docs, reason = "No need for docs in benchmarks")]
 //! Benchmark for the `long_plan` example.
 
 use criterion::{Criterion, criterion_group, criterion_main};
@@ -23,11 +24,10 @@ fn long_plan(strategy: PlanningStrategy) {
     let sleep_action = simple_increment_action("sleep", "energy", Datum::I64(10));
 
     let eat_action = simple_decrement_action("eat", "hunger", Datum::I64(10))
-        .with_precondition("energy", Compare::GreaterThanEquals(Datum::I64(25)));
+        .with_precondition(("energy", Compare::GreaterThanEquals(Datum::I64(25))));
 
     let rob_people = simple_increment_action("rob", "gold", Datum::I64(1))
         .with_effect(Effect {
-            action: "rob".to_string(),
             mutators: vec![
                 Mutator::Decrement("energy".to_string(), Datum::I64(5)),
                 Mutator::Increment("hunger".to_string(), Datum::I64(5)),
@@ -35,8 +35,8 @@ fn long_plan(strategy: PlanningStrategy) {
             state: LocalState::default(),
             cost: 1,
         })
-        .with_precondition("hunger", Compare::LessThanEquals(Datum::I64(50)))
-        .with_precondition("energy", Compare::GreaterThanEquals(Datum::I64(50)));
+        .with_precondition(("hunger", Compare::LessThanEquals(Datum::I64(50))))
+        .with_precondition(("energy", Compare::GreaterThanEquals(Datum::I64(50))));
 
     let actions: Vec<Action> = vec![sleep_action, eat_action, rob_people];
 
@@ -44,7 +44,7 @@ fn long_plan(strategy: PlanningStrategy) {
     let effects = get_effects_from_plan(plan.clone().unwrap().0).collect::<Vec<_>>();
 
     assert_eq!(11, effects.len());
-    assert_eq!(expected_state, effects.last().unwrap().state);
+    assert_eq!(expected_state, effects.last().unwrap().1.state);
 }
 
 fn bench_start_to_goal_strategy(c: &mut Criterion) {

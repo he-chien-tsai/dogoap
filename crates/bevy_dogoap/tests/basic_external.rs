@@ -22,11 +22,11 @@ fn startup(mut commands: Commands) {
 
     // Alternatively, the `simple` functions can help you create things a bit smoother
     let eat_action = EatAction::action()
-        .add_precondition(IsTired::is(false))
-        .add_mutator(IsHungry::set(false));
+        .with_precondition(IsTired::is(false))
+        .with_mutator(IsHungry::set(false));
 
     // Here we define our SleepAction
-    let sleep_action = SleepAction::action().add_mutator(IsTired::set(false));
+    let sleep_action = SleepAction::action().with_mutator(IsTired::set(false));
 
     // But we have a handy macro that kind of makes it a lot easier for us!
     let (planner, components) = create_planner!({
@@ -35,7 +35,7 @@ fn startup(mut commands: Commands) {
             (SleepAction, sleep_action),
         ],
         state: [IsHungry(true), IsTired(true)],
-        goals: [goal.clone()],
+        goals: [goal],
     });
 
     commands

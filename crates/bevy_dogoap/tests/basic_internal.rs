@@ -69,7 +69,7 @@ fn startup(mut commands: Commands) {
 
     // Alternatively, the `simple` functions can help you create things a bit smoother
     let eat_action = simple_action(EAT_ACTION, IS_HUNGRY_KEY, Datum::Bool(false))
-        .with_precondition(IS_TIRED_KEY, Compare::Equals(Datum::Bool(false)));
+        .with_precondition((IS_TIRED_KEY, Compare::Equals(Datum::Bool(false))));
 
     // Here we define our SleepAction
     let sleep_action = simple_action(SLEEP_ACTION, IS_TIRED_KEY, Datum::Bool(false));

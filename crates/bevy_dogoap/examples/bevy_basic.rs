@@ -36,12 +36,12 @@ fn startup(mut commands: Commands) {
     // Our first action, the eat action, that sets is_hungry to false
     // but requires is_tired to be set to false first
     let eat_action = EatAction::action()
-        .add_precondition(IsTired::is(false))
-        .add_mutator(IsHungry::set(false));
+        .with_precondition(IsTired::is(false))
+        .with_mutator(IsHungry::set(false));
 
     // Our first action, the sleep action, that sets is_tired to false
     // No preconditions in order to sleep
-    let sleep_action = SleepAction::action().add_mutator(IsTired::set(false));
+    let sleep_action = SleepAction::action().with_mutator(IsTired::set(false));
 
     // Create the planner that
     // - registers our actions

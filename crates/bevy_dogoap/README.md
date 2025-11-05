@@ -27,7 +27,7 @@ fn startup(mut commands: Commands) {
     let eat_action = EatAction::action()
         // Mutators define what happens when this action is executed
         // In this case, we set IsHungry to false
-        .add_mutator(IsHungry::set(false));
+        .with_mutator(IsHungry::set(false));
 
     // Create our planner + required DatumComponents
     let (planner, components) = create_planner!({

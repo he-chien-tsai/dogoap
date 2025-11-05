@@ -19,10 +19,11 @@ fn main() {
     let goal = Goal::new().with_req("gold", Compare::Equals(Datum::I64(7)));
 
     // TOOD should keep the `10 as 64` syntax with .from somehow
-    let sleep_action = simple_increment_action("sleep", "energy", Datum::I64(10));
+    let sleep_action =
+        Action::new("sleep").with_mutator(Mutator::Increment("energy".into(), Datum::I64(10)));
 
     let eat_action = simple_decrement_action("eat", "hunger", Datum::I64(10))
-        .with_precondition("energy", Compare::GreaterThanEquals(Datum::I64(25)));
+        .with_precondition(("energy", Compare::GreaterThanEquals(Datum::I64(25))));
 
     let rob_people = simple_increment_action("rob", "gold", Datum::I64(1))
         .with_effect(Effect {
@@ -34,8 +35,8 @@ fn main() {
             state: LocalState::default(),
             cost: 1,
         })
-        .with_precondition("hunger", Compare::LessThanEquals(Datum::I64(50)))
-        .with_precondition("energy", Compare::GreaterThanEquals(Datum::I64(50)));
+        .with_precondition(("hunger", Compare::LessThanEquals(Datum::I64(50))))
+        .with_precondition(("energy", Compare::GreaterThanEquals(Datum::I64(50))));
 
     let actions: Vec<Action> = vec![sleep_action, eat_action, rob_people];
 

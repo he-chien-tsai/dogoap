@@ -1,3 +1,7 @@
+/// Creates a [`Planner`](crate::prelude::Planner) from
+/// - A list of actions
+/// - A list of states
+/// - A list of goals
 #[macro_export]
 macro_rules! create_planner {
     ({
@@ -33,6 +37,8 @@ macro_rules! create_planner {
     }};
 }
 
+/// Registers [`DatumComponent`](crate::prelude::DatumComponent)s into the type registry.
+/// You need to call this macro and [`register_actions`] with all your relevant types on app startup for dogoap to function properly.
 #[macro_export]
 macro_rules! register_components {
     ($app:ident, [$($comp:ty),*]) => {
@@ -42,6 +48,8 @@ macro_rules! register_components {
     };
 }
 
+/// Registers [`ActionComponent`](crate::prelude::ActionComponent)s into the type registry.
+/// You need to call this macro and [`register_components`] with all your relevant types on app startup for dogoap to function properly.
 #[macro_export]
 macro_rules! register_actions {
     ($app:ident, [$($comp:ty),*]) => {

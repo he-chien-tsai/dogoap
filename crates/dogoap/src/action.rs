@@ -31,6 +31,7 @@ impl Hash for Action {
 }
 
 impl Action {
+    /// Create a new action with the given key.
     pub fn new(key: &str) -> Self {
         Self {
             key: key.to_string(),
@@ -39,23 +40,20 @@ impl Action {
         }
     }
 
-    pub fn with_precondition(mut self, key: &str, compare: Compare) -> Self {
-        self.preconditions.push((key.to_string(), compare));
-        self
-    }
-
+    /// Add an effect to the action, i.e. something that will be true after the action is executed.
     pub fn with_effect(mut self, effect: Effect) -> Self {
         self.effects.push(effect);
         self
     }
 
-    pub fn add_precondition(mut self, precondition: (String, Compare)) -> Self {
-        self.preconditions.push(precondition);
+    /// Add a precondition to the action, i.e. something that must be true before the action can be executed.
+    pub fn with_precondition(mut self, (key, compare): (impl Into<String>, Compare)) -> Self {
+        self.preconditions.push((key.into(), compare));
         self
     }
 
     // TODO currently only handles one effect
-    pub fn add_mutator(mut self, mutator: Mutator) -> Self {
+    pub fn with_mutator(mut self, mutator: Mutator) -> Self {
         if self.effects.is_empty() {
             self.effects = vec![Effect::new(&self.key.clone()).with_mutator(mutator)];
         } else {
@@ -66,6 +64,7 @@ impl Action {
         self
     }
 
+    /// Set the effect's cost.
     pub fn set_cost(mut self, new_cost: usize) -> Self {
         let mut effect = self.effects[0].clone();
         effect.cost = new_cost;

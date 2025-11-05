@@ -72,11 +72,13 @@ fn successors<'a>(
 
 fn is_goal(node: &Node, goal: &Goal) -> bool {
     goal.requirements.iter().all(|(key, value)| {
-        if let Some(state_val) = node.state().data.get(key) {
-            compare_values(value, state_val)
-        } else {
-            panic!("Couldn't find key {key:#?} in LocalState");
-        }
+        let state_val = node.state().data.get(key).unwrap_or_else(|| {
+            panic!(
+                "Couldn't find key {key:#?} in LocalState {:#?}",
+                node.state().data
+            )
+        });
+        compare_values(value, state_val)
     })
 }
 
