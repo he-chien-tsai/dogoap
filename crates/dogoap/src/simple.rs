@@ -1,27 +1,29 @@
 use crate::prelude::*;
 
-pub fn simple_action<T>(name: &str, key_to_mutate: &str, from_value: T) -> Action
-where
-    Datum: From<T>,
-{
+pub fn simple_action(
+    name: impl Into<String>,
+    key_to_mutate: impl Into<String>,
+    from_value: impl Into<Datum>,
+) -> Action {
     simple_multi_mutate_action(name, vec![(key_to_mutate, from_value)])
 }
 
-pub fn simple_multi_mutate_action<T>(name: &str, muts: Vec<(&str, T)>) -> Action
-where
-    Datum: From<T>,
-{
+pub fn simple_multi_mutate_action(
+    name: impl Into<String>,
+    muts: Vec<(impl Into<String>, impl Into<Datum>)>,
+) -> Action {
     let mut mutators = vec![];
 
-    for m in muts {
-        mutators.push(Mutator::Set(m.0.to_string(), m.1.into()));
+    for (key, value) in muts {
+        mutators.push(Mutator::set(key, value));
     }
 
+    let name = name.into();
     Action {
-        key: name.to_string(),
+        key: name.clone(),
         preconditions: vec![],
         effects: vec![Effect {
-            action: name.to_string(),
+            action: name,
             mutators,
             state: LocalState::new(),
             cost: 1,
@@ -29,36 +31,18 @@ where
     }
 }
 
-pub fn simple_increment_action<T>(name: &str, key_to_mutate: &str, from_value: T) -> Action
-where
-    Datum: From<T>,
-{
-    let mut action = simple_multi_mutate_action(name, vec![]);
-    action.effects = vec![Effect {
-        action: name.to_string(),
-        mutators: vec![Mutator::Increment(
-            key_to_mutate.to_string(),
-            from_value.into(),
-        )],
-        state: LocalState::new(),
-        cost: 1,
-    }];
-    action
+pub fn simple_increment_action(
+    name: &str,
+    key_to_mutate: impl Into<String>,
+    from_value: impl Into<Datum>,
+) -> Action {
+    Action::new(name).with_mutator(Mutator::increment(key_to_mutate, from_value))
 }
 
-pub fn simple_decrement_action<T>(name: &str, key_to_mutate: &str, from_value: T) -> Action
-where
-    Datum: From<T>,
-{
-    let mut action = simple_multi_mutate_action(name, vec![]);
-    action.effects = vec![Effect {
-        action: name.to_string(),
-        mutators: vec![Mutator::Decrement(
-            key_to_mutate.to_string(),
-            from_value.into(),
-        )],
-        state: LocalState::new(),
-        cost: 1,
-    }];
-    action
+pub fn simple_decrement_action(
+    name: &str,
+    key_to_mutate: impl Into<String>,
+    from_value: impl Into<Datum>,
+) -> Action {
+    Action::new(name).with_mutator(Mutator::decrement(key_to_mutate, from_value))
 }

@@ -5,16 +5,16 @@
 use dogoap::prelude::*;
 
 fn main() {
-    let start = LocalState::new().with_datum("is_hungry", Datum::Bool(true));
+    let start = LocalState::new().with_datum("is_hungry", true);
 
-    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::Bool(false)));
+    let goal = Goal::new().with_req("is_hungry", Compare::equals(false));
 
     let eat_action = Action {
         key: "eat".to_string(),
         preconditions: vec![],
         effects: vec![Effect {
             action: "eat".to_string(),
-            mutators: vec![Mutator::Set("is_hungry".to_string(), Datum::Bool(false))],
+            mutators: vec![Mutator::set("is_hungry", false)],
             state: LocalState::new(),
             cost: 1,
         }],

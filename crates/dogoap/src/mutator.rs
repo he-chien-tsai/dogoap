@@ -13,6 +13,23 @@ pub enum Mutator {
     Decrement(String, Datum), // :key, :decrement-by
 }
 
+impl Mutator {
+    /// Convenience method for creating a [`Mutator::Set`]
+    pub fn set(key: impl Into<String>, value: impl Into<Datum>) -> Self {
+        Mutator::Set(key.into(), value.into())
+    }
+
+    /// Convenience method for creating a [`Mutator::Increment`]
+    pub fn increment(key: impl Into<String>, value: impl Into<Datum>) -> Self {
+        Mutator::Increment(key.into(), value.into())
+    }
+
+    /// Convenience method for creating a [`Mutator::Decrement`]
+    pub fn decrement(key: impl Into<String>, value: impl Into<Datum>) -> Self {
+        Mutator::Decrement(key.into(), value.into())
+    }
+}
+
 pub fn apply_mutator(data: &mut InternalData, mutator: &Mutator) {
     match mutator {
         Mutator::Set(key, value) => {

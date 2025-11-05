@@ -22,7 +22,7 @@ A Goal is the final state we want the planner to plan for.
 
 ### `Compare`
 
-A Compare is used in Preconditions and Goals to indicate what we want a Datum in our LocalState to be. `Compare::GreaterThan(Datum::I64(10))` would mean we're looking to have a i64 result that is greater than 10. 
+A Compare is used in Preconditions and Goals to indicate what we want a Datum in our LocalState to be. `Compare::GreaterThan(10_i64)` would mean we're looking to have a i64 result that is greater than 10.
 
 ### `Action`
 
@@ -118,7 +118,7 @@ assert_eq!(
 
 ### `create_planner!` macro
 
-This macro is responsible for setting everything up and return a `planner` that does the planning itself and `components` who are your `DatumComponent`s, basically the state of your Entity. These needs to be added to the Entity you want to control with dogoap. 
+This macro is responsible for setting everything up and return a `planner` that does the planning itself and `components` who are your `DatumComponent`s, basically the state of your Entity. These needs to be added to the Entity you want to control with dogoap.
 
 ```rust
     let (mut planner, components) = create_planner!({
@@ -134,7 +134,7 @@ This macro is responsible for setting everything up and return a `planner` that 
 
 ### `DogoapPlugin` Bevy Plugin
 
-This plugin has to be added to your Bevy application as it's what actually makes the steps from the plan active in your Entities. 
+This plugin has to be added to your Bevy application as it's what actually makes the steps from the plan active in your Entities.
 
 ### `register_components!` macro
 

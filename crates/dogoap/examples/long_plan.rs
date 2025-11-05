@@ -7,36 +7,35 @@ use dogoap::{
 
 fn main() {
     let start = LocalState::new()
-        .with_datum("energy", Datum::I64(30))
-        .with_datum("hunger", Datum::I64(70))
-        .with_datum("gold", Datum::I64(0));
+        .with_datum("energy", 30_i64)
+        .with_datum("hunger", 70_i64)
+        .with_datum("gold", 0_i64);
 
     let expected_state = LocalState::new()
-        .with_datum("energy", Datum::I64(50))
-        .with_datum("hunger", Datum::I64(50))
-        .with_datum("gold", Datum::I64(7));
+        .with_datum("energy", 50_i64)
+        .with_datum("hunger", 50_i64)
+        .with_datum("gold", 7_i64);
 
-    let goal = Goal::new().with_req("gold", Compare::Equals(Datum::I64(7)));
+    let goal = Goal::new().with_req("gold", Compare::equals(7_i64));
 
     // TOOD should keep the `10 as 64` syntax with .from somehow
-    let sleep_action =
-        Action::new("sleep").with_mutator(Mutator::Increment("energy".into(), Datum::I64(10)));
+    let sleep_action = Action::new("sleep").with_mutator(Mutator::increment("energy", 10_i64));
 
-    let eat_action = simple_decrement_action("eat", "hunger", Datum::I64(10))
-        .with_precondition(("energy", Compare::GreaterThanEquals(Datum::I64(25))));
+    let eat_action = simple_decrement_action("eat", "hunger", 10_i64)
+        .with_precondition(("energy", Compare::greater_than_equals(26_i64)));
 
-    let rob_people = simple_increment_action("rob", "gold", Datum::I64(1))
+    let rob_people = simple_increment_action("rob", "gold", 1_i64)
         .with_effect(Effect {
             action: "rob".to_string(),
             mutators: vec![
-                Mutator::Decrement("energy".to_string(), Datum::I64(5)),
-                Mutator::Increment("hunger".to_string(), Datum::I64(5)),
+                Mutator::decrement("energy", 5_i64),
+                Mutator::increment("hunger", 5_i64),
             ],
             state: LocalState::default(),
             cost: 1,
         })
-        .with_precondition(("hunger", Compare::LessThanEquals(Datum::I64(50))))
-        .with_precondition(("energy", Compare::GreaterThanEquals(Datum::I64(50))));
+        .with_precondition(("hunger", Compare::less_than_equals(50_i64)))
+        .with_precondition(("energy", Compare::greater_than_equals(50_i64)));
 
     let actions: Vec<Action> = vec![sleep_action, eat_action, rob_people];
 

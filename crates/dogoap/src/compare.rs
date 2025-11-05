@@ -13,6 +13,28 @@ pub enum Compare {
 }
 
 impl Compare {
+    /// Convenience method for creating a [`Compare::Equals`]
+    pub fn equals(value: impl Into<Datum>) -> Self {
+        Compare::Equals(value.into())
+    }
+
+    /// Convenience method for creating a [`Compare::NotEquals`]
+    pub fn not_equals(value: impl Into<Datum>) -> Self {
+        Compare::NotEquals(value.into())
+    }
+
+    /// Convenience method for creating a [`Compare::GreaterThanEquals`]
+    pub fn greater_than_equals(value: impl Into<Datum>) -> Self {
+        Compare::GreaterThanEquals(value.into())
+    }
+
+    /// Convenience method for creating a [`Compare::LessThanEquals`]
+    pub fn less_than_equals(value: impl Into<Datum>) -> Self {
+        Compare::LessThanEquals(value.into())
+    }
+}
+
+impl Compare {
     pub fn value(&self) -> Datum {
         match self {
             Compare::Equals(f)
@@ -75,7 +97,7 @@ mod test {
 
     #[test]
     fn test_check_preconditions_empty() {
-        let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
+        let state = LocalState::default().with_datum("is_hungry", true);
         let action = Action::default();
 
         let result = check_preconditions(&state, &action);
@@ -84,9 +106,8 @@ mod test {
 
     #[test]
     fn test_check_preconditions_true() {
-        let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
-        let action =
-            Action::default().with_precondition(("is_hungry", Compare::Equals(Datum::Bool(true))));
+        let state = LocalState::default().with_datum("is_hungry", true);
+        let action = Action::default().with_precondition(("is_hungry", Compare::equals(true)));
 
         let result = check_preconditions(&state, &action);
         assert!(result);
@@ -94,9 +115,8 @@ mod test {
 
     #[test]
     fn test_check_preconditions_false() {
-        let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
-        let action =
-            Action::default().with_precondition(("is_hungry", Compare::Equals(Datum::Bool(false))));
+        let state = LocalState::default().with_datum("is_hungry", true);
+        let action = Action::default().with_precondition(("is_hungry", Compare::equals(false)));
 
         let result = check_preconditions(&state, &action);
         assert!(!result);
@@ -104,20 +124,20 @@ mod test {
 
     #[test]
     fn test_check_preconditions_conflicting_preconditions() {
-        let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
+        let state = LocalState::default().with_datum("is_hungry", true);
 
         // False + True
         let action = Action::default()
-            .with_precondition(("is_hungry", Compare::Equals(Datum::Bool(false))))
-            .with_precondition(("is_hungry", Compare::Equals(Datum::Bool(true))));
+            .with_precondition(("is_hungry", Compare::equals(false)))
+            .with_precondition(("is_hungry", Compare::equals(true)));
 
         let result = check_preconditions(&state, &action);
         assert!(!result);
 
         // True + False
         let action = Action::default()
-            .with_precondition(("is_hungry", Compare::Equals(Datum::Bool(true))))
-            .with_precondition(("is_hungry", Compare::Equals(Datum::Bool(false))));
+            .with_precondition(("is_hungry", Compare::equals(true)))
+            .with_precondition(("is_hungry", Compare::equals(false)));
 
         let result = check_preconditions(&state, &action);
         assert!(!result);

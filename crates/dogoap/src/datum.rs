@@ -12,6 +12,30 @@ pub enum Datum {
     Enum(usize),
 }
 
+impl From<i64> for Datum {
+    fn from(value: i64) -> Self {
+        Datum::I64(value)
+    }
+}
+
+impl From<f64> for Datum {
+    fn from(value: f64) -> Self {
+        Datum::F64(value)
+    }
+}
+
+impl From<bool> for Datum {
+    fn from(value: bool) -> Self {
+        Datum::Bool(value)
+    }
+}
+
+impl From<usize> for Datum {
+    fn from(value: usize) -> Self {
+        Datum::Enum(value)
+    }
+}
+
 impl Hash for Datum {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         core::mem::discriminant(self).hash(state);

@@ -36,8 +36,8 @@ impl LocalState {
     }
 
     /// Create a new local state with a single datum
-    pub fn with_datum(mut self, key: &str, value: Datum) -> Self {
-        self.data.insert(key.to_string(), value);
+    pub fn with_datum(mut self, key: impl Into<String>, value: impl Into<Datum>) -> Self {
+        self.data.insert(key.into(), value.into());
         self
     }
 
@@ -71,22 +71,22 @@ mod tests {
 
     #[test]
     fn test_distance_to_goal() {
-        let state = LocalState::new().with_datum("energy", Datum::I64(50));
-        let goal_state = Goal::new().with_req("energy", Compare::Equals(Datum::I64(50)));
+        let state = LocalState::new().with_datum("energy", 50_i64);
+        let goal_state = Goal::new().with_req("energy", Compare::equals(50_i64));
         let distance = state.distance_to_goal(&goal_state.clone());
         assert_eq!(distance, 0);
 
-        let state = LocalState::new().with_datum("energy", Datum::I64(25));
-        let goal_state = Goal::new().with_req("energy", Compare::Equals(Datum::I64(50)));
+        let state = LocalState::new().with_datum("energy", 25_i64);
+        let goal_state = Goal::new().with_req("energy", Compare::equals(50_i64));
         let distance = state.distance_to_goal(&goal_state.clone());
         assert_eq!(distance, 25);
 
         let state = LocalState::new()
-            .with_datum("energy", Datum::I64(25))
-            .with_datum("hunger", Datum::F64(25.0));
+            .with_datum("energy", 25_i64)
+            .with_datum("hunger", 25.0_f64);
         let goal_state = Goal::new()
-            .with_req("energy", Compare::Equals(Datum::I64(50)))
-            .with_req("hunger", Compare::Equals(Datum::F64(50.0)));
+            .with_req("energy", Compare::equals(50_i64))
+            .with_req("hunger", Compare::equals(50.0_f64));
         let distance = state.distance_to_goal(&goal_state.clone());
         assert_eq!(distance, 50);
     }

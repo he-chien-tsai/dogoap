@@ -37,8 +37,8 @@ impl Goal {
     }
 
     /// Create a new goal with a single requirements
-    pub fn with_req(mut self, key: &str, compare: Compare) -> Self {
-        self.requirements.insert(key.to_string(), compare);
+    pub fn with_req(mut self, key: impl Into<String>, compare: impl Into<Compare>) -> Self {
+        self.requirements.insert(key.into(), compare.into());
         self
     }
 

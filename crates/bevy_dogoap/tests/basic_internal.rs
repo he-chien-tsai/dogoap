@@ -38,8 +38,8 @@ fn startup(mut commands: Commands) {
 
     // Then we decide a goal of not being hungry nor tired
     let goal = Goal::new()
-        .with_req(IS_HUNGRY_KEY, Compare::Equals(Datum::Bool(false)))
-        .with_req(IS_TIRED_KEY, Compare::Equals(Datum::Bool(false)));
+        .with_req(IS_HUNGRY_KEY, Compare::equals(false))
+        .with_req(IS_TIRED_KEY, Compare::equals(false));
 
     // All goals our planner could use
     let goals = vec![goal.clone()];
@@ -68,11 +68,11 @@ fn startup(mut commands: Commands) {
     // };
 
     // Alternatively, the `simple` functions can help you create things a bit smoother
-    let eat_action = simple_action(EAT_ACTION, IS_HUNGRY_KEY, Datum::Bool(false))
-        .with_precondition((IS_TIRED_KEY, Compare::Equals(Datum::Bool(false))));
+    let eat_action = simple_action(EAT_ACTION, IS_HUNGRY_KEY, false)
+        .with_precondition((IS_TIRED_KEY, Compare::equals(false)));
 
     // Here we define our SleepAction
-    let sleep_action = simple_action(SLEEP_ACTION, IS_TIRED_KEY, Datum::Bool(false));
+    let sleep_action = simple_action(SLEEP_ACTION, IS_TIRED_KEY, false);
 
     // Verbose way of defining an actions_map that the planner needs
     let actions_map = HashMap::from([
