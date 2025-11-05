@@ -57,7 +57,7 @@ struct Receiver<T>(T);
 /// We do it in a asyncronous manner as `make_plan` blocks and if it takes 100ms, we'll delay frames
 /// by 100ms...
 #[derive(Component)]
-pub(crate) struct AsyncPlanReceiver(Receiver<Option<Vec<Effect>>>);
+pub(crate) struct PlanReceiver(Receiver<Option<Vec<Effect>>>);
 
 /// This Component gets added when the planner for an Entity is currently planning,
 /// and removed once a plan has been created. Normally this will take under 1ms,
@@ -132,7 +132,7 @@ impl From<Entity> for Plan {
 pub(crate) fn create_planner_tasks(
     plan: On<Plan>,
     mut commands: Commands,
-    planner: Query<&Planner, Without<AsyncPlanReceiver>>,
+    planner: Query<&Planner, Without<PlanReceiver>>,
     names: Query<NameOrEntity, Allow<Disabled>>,
 ) {
     let entity = plan.planner;
@@ -152,15 +152,13 @@ pub(crate) fn create_planner_tasks(
         );
         return;
     };
-    #[cfg(feature = "compute-pool")]
-    let thread_pool = AsyncComputeTaskPool::get();
 
     let state = planner.state.clone();
     let actions = planner.actions_for_dogoap.clone();
 
-    let goals = planner.goals.clone();
     #[cfg(feature = "compute-pool")]
     let receiver = {
+        let goals = planner.goals.clone();
         let (send, receiver) = crossbeam_channel::bounded(1);
         let future = async move {
             let start = Instant::now();
@@ -186,22 +184,23 @@ pub(crate) fn create_planner_tasks(
             }
             send.send(None).expect("Failed to send plan");
         };
+        let thread_pool = AsyncComputeTaskPool::get();
         thread_pool.spawn(future).detach();
         receiver
     };
     #[cfg(not(feature = "compute-pool"))]
-    let receiver = Receiver(make_plan(&state, &actions[..], &goal));
+    let receiver = {
+        let plan = planner
+            .goals
+            .iter()
+            .find_map(|goal| make_plan(&state, &actions[..], &goal))
+            .map(|(nodes, _cost)| get_effects_from_plan(nodes).collect());
+        Receiver(plan)
+    };
 
     commands
         .entity(entity)
-        .insert((IsPlanning, AsyncPlanReceiver(receiver)));
-}
-
-#[cfg(not(feature = "compute-pool"))]
-fn grab_plan_from_task(
-    task: &mut Receiver<Option<(Vec<Node>, usize)>>,
-) -> Option<(Vec<Node>, usize)> {
-    task.0.take()
+        .insert((IsPlanning, PlanReceiver(receiver)));
 }
 
 /// This system is responsible for polling active [`ComputePlan`]s and switch the `current_action` if it changed
@@ -209,7 +208,7 @@ fn grab_plan_from_task(
 /// remove all the others, signalling that [`Action`] is currently active.
 pub(crate) fn handle_planner_tasks(
     mut commands: Commands,
-    mut query: Query<(Entity, &mut AsyncPlanReceiver, &mut Planner)>,
+    mut query: Query<(Entity, &mut PlanReceiver, &mut Planner)>,
     names: Query<NameOrEntity, Allow<Disabled>>,
 ) -> Result {
     #[cfg_attr(
@@ -221,7 +220,7 @@ pub(crate) fn handle_planner_tasks(
     )]
     for (entity, mut task, mut planner) in query.iter_mut() {
         #[cfg(not(feature = "compute-pool"))]
-        let plan = grab_plan_from_task(&mut task.0);
+        let plan = task.0.0.take();
 
         #[cfg(feature = "compute-pool")]
         let plan = match task.0.try_recv() {
@@ -234,7 +233,7 @@ pub(crate) fn handle_planner_tasks(
             },
         };
 
-        commands.entity(entity).try_remove::<AsyncPlanReceiver>();
+        commands.entity(entity).try_remove::<PlanReceiver>();
         match plan {
             Some(effects) => {
                 if planner.current_plan.len() != effects.len()
