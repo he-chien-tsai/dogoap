@@ -50,25 +50,24 @@ fn successors<'a>(
 ) -> impl Iterator<Item = (Node, usize)> + 'a {
     let state = node.state();
     actions.iter().filter_map(move |action| {
-        if check_preconditions(state, action) && !action.effects.is_empty() {
-            let new_state = state.clone();
-            let first_effect = &action.effects[0];
-
-            let mut new_data = new_state.data.clone();
-            for mutator in &first_effect.mutators {
-                apply_mutator(&mut new_data, mutator);
-            }
-
-            let new_effect = Effect {
-                action: first_effect.action.clone(),
-                mutators: first_effect.mutators.clone(),
-                cost: first_effect.cost,
-                state: LocalState { data: new_data },
-            };
-            Some((Node::Effect(new_effect), first_effect.cost))
-        } else {
-            None
+        if !check_preconditions(state, action) || action.effects.is_empty() {
+            return None;
         }
+        let new_state = state.clone();
+        let first_effect = &action.effects[0];
+
+        let mut new_data = new_state.data.clone();
+        for mutator in &first_effect.mutators {
+            apply_mutator(&mut new_data, mutator);
+        }
+
+        let new_effect = Effect {
+            action: first_effect.action.clone(),
+            mutators: first_effect.mutators.clone(),
+            cost: first_effect.cost,
+            state: LocalState { data: new_data },
+        };
+        Some((Node::Effect(new_effect), first_effect.cost))
     })
 }
 
