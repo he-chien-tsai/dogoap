@@ -46,7 +46,7 @@ criterion = { version = "0.5", features = ["html_reports"] }
 crossbeam-channel = "0.5"
 
 # for running examples
-bevy = { version = "0.17.2", default-features = true }
+bevy = { version = "0.17.2", default-features = true, features = ["track_location"] }
 
 [workspace.lints.rust]
 # Todo: enable this once we have better docs

@@ -704,12 +704,14 @@ fn handle_sell_metal_action(
     for (entity, mut has_metal, mut gold_amount, mut at_location) in query.iter_mut() {
         action_with_progress(&mut progress, entity, &time, 1.0, |is_completed| {
             if is_completed {
-                has_metal.0 = false;
+                if has_metal.0 {
+                    has_metal.0 = false;
 
-                gold_amount.0 += 1;
-                info!("Sold metal for gold! We now have {} gold.", gold_amount.0);
+                    gold_amount.0 += 1;
+                    info!("Sold metal for gold! We now have {} gold.", gold_amount.0);
 
-                at_location.0 = Location::Outside;
+                    at_location.0 = Location::Outside;
+                }
 
                 commands.entity(entity).remove::<SellMetalAction>();
             } else {

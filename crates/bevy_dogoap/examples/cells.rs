@@ -185,12 +185,12 @@ fn handle_move_to(
                     transform.translation += direction * cell.speed * time.delta_secs();
                 } else {
                     info!("Reached destination");
-                    commands.entity(entity).remove::<MoveTo>();
+                    commands.entity(entity).try_remove::<MoveTo>();
                 }
             }
             Err(_) => {
                 // Cancel the MoveTo order as the destination no longer exists...
-                commands.entity(entity).remove::<MoveTo>();
+                commands.entity(entity).try_remove::<MoveTo>();
             }
         }
     }

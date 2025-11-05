@@ -21,7 +21,7 @@ pub struct Planner {
     /// Our current state used for planning, updated by [`update_planner_local_state`] which reads
     /// the current state from our Bevy world and updates it accordingly
     pub state: LocalState,
-    /// A Vector of all possible [`Goal`]s
+    /// A Vector of all possible [`Goal`], ordered by priority.
     pub goals: Vec<Goal>,
     /// What [`Action`] we're currrently trying to execute
     pub current_action: Option<Action>,
@@ -30,9 +30,7 @@ pub struct Planner {
 
     // TODO figure out how to get reflect to work, if possible
     #[reflect(ignore)]
-    pub actions_map: ActionsMap,
-    #[reflect(ignore)]
-    pub datum_components: DatumComponents,
+    actions_map: ActionsMap,
     /// Internal prepared vector of just [`Action`]
     actions_for_dogoap: Vec<Action>,
 }
@@ -83,7 +81,6 @@ impl Planner {
 
         Self {
             state,
-            datum_components: components,
             goals,
             actions_map,
             current_action: None,
@@ -127,6 +124,8 @@ pub struct MakePlan {
     /// The entity that holds the [`Planner`]
     #[event_target]
     pub planner: Entity,
+    /// Goals to be achieved by the plan, ordered by priority.
+    /// If `None`, [`Planner::goals`] will be used.
     pub goals: Option<Vec<Goal>>,
 }
 
@@ -250,7 +249,7 @@ pub(crate) fn handle_planner_tasks(
                         }
                     })
                     .unwrap_or_else(|_| format!("{entity:?}"));
-                warn!("Didn't find any plan for our goal in Entity {name}!");
+                warn!("Failed to make a plan for any goal for entity {name}!");
                 planner.current_action = None;
                 planner.current_plan = None;
             }
@@ -272,6 +271,7 @@ pub(crate) fn execute_plan(
         }
         let Some(plan) = planner.current_plan.as_mut() else {
             debug!("No plan to execute");
+            planner.current_action = None;
             continue;
         };
         match plan.effects.pop() {
@@ -299,6 +299,8 @@ pub(crate) fn execute_plan(
             }
             None => {
                 debug!("Current plan is finished");
+                planner.current_plan = None;
+                planner.current_action = None;
             }
         }
     }
