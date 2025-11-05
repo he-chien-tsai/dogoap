@@ -96,9 +96,7 @@ fn startup(mut commands: Commands) {
 
     let entity = commands.spawn_empty().id();
 
-    let mut planner = Planner::new(components, goals, actions_map);
-
-    planner.current_goal = Some(goal.clone());
+    let planner = Planner::new(components, goals, actions_map);
 
     commands
         .entity(entity)

@@ -184,7 +184,7 @@ fn startup(mut commands: Commands, window: Single<&Window>) {
             .add_mutator(AtLocation::set(Location::Merchant))
             .set_cost(5);
 
-        let (mut planner, components) = create_planner!({
+        let (planner, components) = create_planner!({
             actions: [
                 (EatAction, eat_action),
                 (SleepAction, sleep_action),
@@ -202,11 +202,6 @@ fn startup(mut commands: Commands, window: Single<&Window>) {
             state: [GoldAmount(0), Hunger(25.0), Energy(75.0), AtLocation(Location::Outside), HasOre(false), HasMetal(false)],
             goals: [gold_goal],
         });
-
-        // Don't remove the goal if there is no plan found
-        planner.remove_goal_on_no_plan_found = false;
-        // Set current goal to be to acquire gold
-        planner.current_goal = Some(gold_goal.clone());
 
         let text_style = TextFont {
             font_size: 18.0,

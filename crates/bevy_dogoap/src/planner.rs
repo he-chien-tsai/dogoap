@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use alloc::collections::VecDeque;
+use bevy_ecs::entity_disabling::Disabled;
 use bevy_platform::collections::HashMap;
 use core::fmt;
 
@@ -23,8 +24,6 @@ pub struct Planner {
     pub state: LocalState,
     /// A Vector of all possible [`Goal`]s
     pub goals: Vec<Goal>,
-    /// What [`Goal`] we're currently planning towards
-    pub current_goal: Option<Goal>,
     /// What [`Action`] we're currrently trying to execute
     pub current_action: Option<Action>,
 
@@ -36,8 +35,6 @@ pub struct Planner {
     pub actions_map: ActionsMap,
     #[reflect(ignore)]
     pub datum_components: DatumComponents,
-    /// If the Planner should remove the current goal if it cannot find any plan to reach it
-    pub remove_goal_on_no_plan_found: bool,
     /// Internal prepared vector of just [`Action`]
     actions_for_dogoap: Vec<Action>,
 }
@@ -46,8 +43,8 @@ impl fmt::Debug for Planner {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "State: {:#?}\nGoals: {:#?}\nActions: {:#?}\nCurrent Goal:{:#?}\n",
-            self.state, self.goals, self.actions_for_dogoap, self.current_goal
+            "State: {:#?}\nGoals: {:#?}\nActions: {:#?}\nPossible Goals:{:#?}\n",
+            self.state, self.goals, self.actions_for_dogoap, self.goals
         )
     }
 }
@@ -89,12 +86,10 @@ impl Planner {
         Self {
             state,
             datum_components: components,
-            current_goal: goals.first().cloned(),
             goals,
             actions_map,
             current_action: None,
             current_plan: VecDeque::new(),
-            remove_goal_on_no_plan_found: true,
             actions_for_dogoap,
         }
     }
@@ -138,27 +133,39 @@ pub(crate) fn create_planner_tasks(
     plan: On<Plan>,
     mut commands: Commands,
     planner: Query<&Planner, Without<AsyncPlanReceiver>>,
+    names: Query<NameOrEntity, Allow<Disabled>>,
 ) {
     let entity = plan.planner;
+    let name = names
+        .get(entity)
+        .map(|n| {
+            if n.name.is_some() {
+                format!("{entity:?}: {n}")
+            } else {
+                format!("{entity:?}")
+            }
+        })
+        .unwrap_or_else(|_| format!("{entity:?}"));
     let Ok(planner) = planner.get(entity) else {
         debug!(
-            "Started planner on an entity {entity} that either is not a planner, is already computing a plan, or has been filtered out by a default filter. Ignoring."
+            "Started planner on an entity {name} that either is not a planner, is already computing a plan, or has been filtered out by a default filter. Ignoring."
         );
         return;
     };
     #[cfg(feature = "compute-pool")]
     let thread_pool = AsyncComputeTaskPool::get();
 
-    if let Some(goal) = planner.current_goal.clone() {
-        let state = planner.state.clone();
-        let actions = planner.actions_for_dogoap.clone();
+    let state = planner.state.clone();
+    let actions = planner.actions_for_dogoap.clone();
 
-        #[cfg(feature = "compute-pool")]
-        let receiver = {
-            let (send, receiver) = crossbeam_channel::bounded(1);
-            let future = async move {
-                let start = Instant::now();
+    let goals = planner.goals.clone();
+    #[cfg(feature = "compute-pool")]
+    let receiver = {
+        let (send, receiver) = crossbeam_channel::bounded(1);
+        let future = async move {
+            let start = Instant::now();
 
+            for goal in goals {
                 // WARN this is the part that can be slow for large search spaces and why we use AsyncComputePool
                 let plan = make_plan(&state, &actions[..], &goal);
                 let duration = start.elapsed();
@@ -168,23 +175,26 @@ pub(crate) fn create_planner_tasks(
                         .as_ref()
                         .map(|(nodes, _)| nodes.len())
                         .unwrap_or_default();
-                    warn!(
-                        "Planning duration for Entity {entity} was {duration:?} for {steps} steps",
-                    );
+                    warn!("Planning duration for Entity {name} was {duration:?} for {steps} steps",);
                 }
-                let plan = plan.map(|(nodes, _cost)| get_effects_from_plan(nodes).collect());
-                send.send(plan).expect("Failed to send plan");
-            };
-            thread_pool.spawn(future).detach();
-            receiver
+                let Some((nodes, _cost)) = plan else {
+                    continue;
+                };
+                let effects = get_effects_from_plan(nodes).collect();
+                send.send(Some(effects)).expect("Failed to send plan");
+                return;
+            }
+            send.send(None).expect("Failed to send plan");
         };
-        #[cfg(not(feature = "compute-pool"))]
-        let receiver = Receiver(make_plan(&state, &actions[..], &goal));
+        thread_pool.spawn(future).detach();
+        receiver
+    };
+    #[cfg(not(feature = "compute-pool"))]
+    let receiver = Receiver(make_plan(&state, &actions[..], &goal));
 
-        commands
-            .entity(entity)
-            .insert((IsPlanning, AsyncPlanReceiver(receiver)));
-    }
+    commands
+        .entity(entity)
+        .insert((IsPlanning, AsyncPlanReceiver(receiver)));
 }
 
 #[cfg(not(feature = "compute-pool"))]
@@ -200,6 +210,7 @@ fn grab_plan_from_task(
 pub(crate) fn handle_planner_tasks(
     mut commands: Commands,
     mut query: Query<(Entity, &mut AsyncPlanReceiver, &mut Planner)>,
+    names: Query<NameOrEntity, Allow<Disabled>>,
 ) -> Result {
     #[cfg_attr(
         feature = "compute-pool",
@@ -239,7 +250,17 @@ pub(crate) fn handle_planner_tasks(
                 }
             }
             None => {
-                warn!("Didn't find any plan for our goal in Entity {entity}!");
+                let name = names
+                    .get(entity)
+                    .map(|n| {
+                        if n.name.is_some() {
+                            format!("{entity:?}: {n}")
+                        } else {
+                            format!("{entity:?}")
+                        }
+                    })
+                    .unwrap_or_else(|_| format!("{entity:?}"));
+                warn!("Didn't find any plan for our goal in Entity {name}!");
                 // TODO: should this clear the current plan? And the current action?
             }
         }
@@ -282,10 +303,7 @@ pub(crate) fn execute_plan(
                 planner.current_action = Some(found_action.clone());
             }
             None => {
-                if planner.remove_goal_on_no_plan_found {
-                    debug!("Seems there is nothing to be done, removing current goal");
-                    planner.current_goal = None;
-                }
+                debug!("Seems there is nothing to be done");
             }
         }
     }

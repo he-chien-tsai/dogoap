@@ -29,7 +29,7 @@ fn startup(mut commands: Commands) {
     let sleep_action = SleepAction::action().add_mutator(IsTired::set(false));
 
     // But we have a handy macro that kind of makes it a lot easier for us!
-    let (mut planner, components) = create_planner!({
+    let (planner, components) = create_planner!({
         actions: [
             (EatAction, eat_action),
             (SleepAction, sleep_action),
@@ -37,9 +37,6 @@ fn startup(mut commands: Commands) {
         state: [IsHungry(true), IsTired(true)],
         goals: [goal.clone()],
     });
-
-    planner.remove_goal_on_no_plan_found = false;
-    planner.current_goal = Some(goal.clone());
 
     commands.spawn((planner, components)).trigger(Plan::from);
 }

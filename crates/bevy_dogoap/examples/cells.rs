@@ -84,7 +84,7 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
     let mut rng = rand::rng();
     let starting_hunger = rng.random_range(20.0..45.0);
 
-    let (mut planner, components) = create_planner!({
+    let (planner, components) = create_planner!({
         actions: [
             (EatAction, eat_action),
             (GoToFoodAction, go_to_food_action),
@@ -93,9 +93,6 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
         state: [Hunger(starting_hunger), AtFood(false), IsReplicating(false)],
         goals: [goal],
     });
-
-    planner.remove_goal_on_no_plan_found = false; // Don't remove the goal
-    planner.current_goal = Some(goal.clone());
 
     let text_style = TextFont {
         font_size: 12.0,

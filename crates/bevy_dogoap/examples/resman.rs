@@ -97,6 +97,7 @@ fn main() {
             handle_go_to_order_desk,
             handle_move_to,
             handle_call_worker_to_empty_order_desk,
+            handle_idle.run_if(on_timer(Duration::from_millis(800))),
         ),
     )
     .run();
@@ -150,6 +151,9 @@ struct ServedOrder(bool);
 #[derive(Component, Clone, DatumComponent)]
 struct AtLemonadeMaker(bool);
 
+#[derive(Component, Clone, DatumComponent)]
+struct Idling(bool);
+
 // Actions for worker
 
 #[derive(Component, Clone, Default, ActionComponent)]
@@ -163,6 +167,9 @@ struct ProduceLemonade;
 
 #[derive(Component, Clone, Default, ActionComponent)]
 struct GoToLemonadeMaker;
+
+#[derive(Component, Clone, Default, ActionComponent)]
+struct Idle;
 
 // Markers
 
@@ -212,7 +219,7 @@ struct StateDebugText;
 fn setup(mut commands: Commands) {
     // Spawn customers
     for _i in 0..1 {
-        let goal = Goal::from_reqs(&[Thirst::is_less(1.0)]);
+        let not_thirsty_goal = Goal::from_reqs(&[Thirst::is_less(1.0)]);
 
         // Requires us to carry a lemonade, results in us having 10 less thirst + carrying Nothing
         let drink_lemonade_action = DrinkLemonade::action()
@@ -244,7 +251,7 @@ fn setup(mut commands: Commands) {
             .add_precondition(AtOrderDesk::is(false))
             .add_mutator(AtOrderDesk::set(true));
 
-        let (mut planner, components) = create_planner!({
+        let (planner, components) = create_planner!({
             actions: [
                 (DrinkLemonade, drink_lemonade_action),
                 (PickupLemonade, pickup_lemonade_action),
@@ -259,11 +266,8 @@ fn setup(mut commands: Commands) {
                 OrderReady(false),
                 AtOrderDesk(false),
             ],
-            goals: [goal],
+            goals: [not_thirsty_goal],
         });
-
-        planner.remove_goal_on_no_plan_found = false; // Don't remove the goal
-        planner.current_goal = Some(goal.clone());
 
         commands
             .spawn((
@@ -300,7 +304,8 @@ fn setup(mut commands: Commands) {
 
         // In order to set ServedOrder to true, the agent needs to run ServeOrder
 
-        let goal = Goal::from_reqs(&[AtOrderDesk::is(true)]);
+        let at_order_desk_goal = Goal::from_reqs(&[AtOrderDesk::is(true)]);
+        let idle_goal = Goal::from_reqs(&[Idling::is(true)]);
 
         let serve_order_action = ServeOrder::action()
             .add_precondition(CarryingItem::is(Item::Lemonade))
@@ -325,6 +330,10 @@ fn setup(mut commands: Commands) {
             .add_precondition(ShouldGoToOrderDesk::is(true))
             .add_mutator(AtOrderDesk::set(true));
 
+        let idle = Idle::action()
+            .add_precondition(Idling::is(false))
+            .add_mutator(Idling::set(true));
+
         let (planner, components) = create_planner!({
             actions: [
                 (Rest, rest_action),
@@ -332,6 +341,7 @@ fn setup(mut commands: Commands) {
                 (ProduceLemonade, produce_lemonade_action),
                 (GoToLemonadeMaker, go_to_lemonade_maker_action),
                 (GoToOrderDesk, go_to_order_desk_action),
+                (Idle, idle),
             ],
             state: [
                 Energy(50.0),
@@ -340,8 +350,9 @@ fn setup(mut commands: Commands) {
                 AtOrderDesk(false),
                 CarryingItem(Item::Nothing),
                 ShouldGoToOrderDesk(false),
+                Idling(false),
             ],
-            goals: [goal],
+            goals: [at_order_desk_goal, idle_goal],
         });
 
         commands
@@ -433,6 +444,13 @@ fn handle_call_worker_to_empty_order_desk(
             order_desk.assigned_worker = Some(worker);
             commands.entity(worker).insert(GoToOrderDesk);
         }
+    }
+}
+
+fn handle_idle(mut query: Query<(), With<Idle>>) {
+    for _ in query.iter_mut() {
+        // Don't set `Idling` to true: we leave this goal unatainable so it is always a valid fallback
+        info!("I'm idling!");
     }
 }
 

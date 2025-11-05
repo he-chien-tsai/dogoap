@@ -43,7 +43,7 @@ impl Goal {
     }
 
     /// Create a new goal from a list of requirements
-    pub fn from_reqs(preconditions: &[(String, Compare)]) -> Goal {
+    pub fn from_reqs(preconditions: &[(String, Compare)]) -> Self {
         let mut goal = Goal::new();
         for (k, v) in preconditions {
             goal = goal.with_req(k, v.clone());
