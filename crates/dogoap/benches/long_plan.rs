@@ -6,9 +6,8 @@ use dogoap::{
     prelude::*,
     simple::{simple_decrement_action, simple_increment_action},
 };
-use std::hint::black_box;
 
-fn long_plan(strategy: PlanningStrategy) {
+fn long_plan() {
     let start = LocalState::new()
         .with_datum("energy", 30_i64)
         .with_datum("hunger", 70_i64)
@@ -41,7 +40,7 @@ fn long_plan(strategy: PlanningStrategy) {
 
     let actions: Vec<Action> = vec![sleep_action, eat_action, rob_people];
 
-    let plan = make_plan_with_strategy(strategy, &start, &actions[..], &goal);
+    let plan = make_plan(&start, &actions[..], &goal);
     let effects = get_effects_from_plan(plan.clone().unwrap().0).collect::<Vec<_>>();
 
     assert_eq!(11, effects.len());
@@ -50,7 +49,7 @@ fn long_plan(strategy: PlanningStrategy) {
 
 fn bench_start_to_goal_strategy(c: &mut Criterion) {
     c.bench_function("Start To Goal", |b| {
-        b.iter(|| long_plan(black_box(PlanningStrategy::StartToGoal)));
+        b.iter(|| long_plan());
     });
 }
 
