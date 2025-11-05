@@ -707,6 +707,7 @@ fn handle_sell_metal_action(
                 has_metal.0 = false;
 
                 gold_amount.0 += 1;
+                info!("Sold metal for gold! We now have {} gold.", gold_amount.0);
 
                 at_location.0 = Location::Outside;
 

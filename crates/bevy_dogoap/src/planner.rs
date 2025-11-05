@@ -237,16 +237,22 @@ pub(crate) fn handle_planner_tasks(
         commands.entity(entity).try_remove::<AsyncPlanReceiver>();
         match plan {
             Some(effects) => {
-                let effect_names: VecDeque<String> =
-                    effects.iter().map(|i| i.action.to_string()).collect();
-
-                if planner.current_plan != effect_names {
+                if planner.current_plan.len() != effects.len()
+                    || planner
+                        .current_plan
+                        .iter()
+                        .zip(effects.iter())
+                        .any(|(a, b)| *a != b.action)
+                {
                     debug!(
-                        ?effect_names,
+                        ?effects,
                         num_steps = ?effects.len(),
                         "Current plan changed"
                     );
-                    planner.current_plan = effect_names;
+                    planner.current_plan.clear();
+                    planner
+                        .current_plan
+                        .extend(effects.into_iter().map(|effect| effect.action));
                 }
             }
             None => {
@@ -261,7 +267,8 @@ pub(crate) fn handle_planner_tasks(
                     })
                     .unwrap_or_else(|_| format!("{entity:?}"));
                 warn!("Didn't find any plan for our goal in Entity {name}!");
-                // TODO: should this clear the current plan? And the current action?
+                planner.current_action = None;
+                planner.current_plan.clear();
             }
         }
         commands.entity(entity).try_remove::<IsPlanning>();
