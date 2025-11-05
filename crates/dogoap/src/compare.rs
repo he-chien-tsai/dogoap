@@ -6,9 +6,13 @@ use std::hash::{Hash, Hasher};
 #[derive(Clone, Debug, PartialEq)]
 #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub enum Compare {
+    /// Checks if two [`Datum`] are equal.
     Equals(Datum),
+    /// Checks if two [`Datum`] are not equal.
     NotEquals(Datum),
+    /// Checks if the first [`Datum`] is greater than or equal to the second [`Datum`].
     GreaterThanEquals(Datum),
+    /// Checks if the first [`Datum`] is less than or equal to the second [`Datum`].
     LessThanEquals(Datum),
 }
 
@@ -35,6 +39,7 @@ impl Compare {
 }
 
 impl Compare {
+    /// Gets the [`Datum`] that we are comparing against.
     pub fn value(&self) -> Datum {
         match self {
             Compare::Equals(f)

@@ -1,16 +1,20 @@
+//! Utitly functions for creating [`Action`]s.
+
 use crate::prelude::*;
 
+/// Creates an [`Action`] that sets a key to a value.
 pub fn simple_action(
     name: impl Into<String>,
     key_to_mutate: impl Into<String>,
     from_value: impl Into<Datum>,
 ) -> Action {
-    simple_multi_mutate_action(name, vec![(key_to_mutate, from_value)])
+    Action::new(name).with_mutator(Mutator::set(key_to_mutate, from_value))
 }
 
+/// Creates an [`Action`] that sets multiple keys to values.
 pub fn simple_multi_mutate_action(
     name: impl Into<String>,
-    muts: Vec<(impl Into<String>, impl Into<Datum>)>,
+    muts: impl IntoIterator<Item = (impl Into<String>, impl Into<Datum>)>,
 ) -> Action {
     let mut mutators = vec![];
 
@@ -31,6 +35,7 @@ pub fn simple_multi_mutate_action(
     }
 }
 
+/// Creates an [`Action`] that increments a key by a value.
 pub fn simple_increment_action(
     name: &str,
     key_to_mutate: impl Into<String>,
@@ -39,6 +44,7 @@ pub fn simple_increment_action(
     Action::new(name).with_mutator(Mutator::increment(key_to_mutate, from_value))
 }
 
+/// Creates an [`Action`] that decrements a key by a value.
 pub fn simple_decrement_action(
     name: &str,
     key_to_mutate: impl Into<String>,

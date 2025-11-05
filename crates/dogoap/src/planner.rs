@@ -1,3 +1,5 @@
+//! Types related to planning.
+
 use crate::{
     action::Action,
     compare::{check_preconditions, compare_values},

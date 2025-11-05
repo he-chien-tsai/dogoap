@@ -32,9 +32,9 @@ impl Hash for Action {
 
 impl Action {
     /// Create a new action with the given key.
-    pub fn new(key: &str) -> Self {
+    pub fn new(key: impl Into<String>) -> Self {
         Self {
-            key: key.to_string(),
+            key: key.into(),
             preconditions: vec![],
             effects: vec![],
         }
@@ -53,6 +53,8 @@ impl Action {
     }
 
     // TODO currently only handles one effect
+    /// Adds a mutator to the action's effect, i.e. something that will be mutated after the action is executed.
+    /// An effect can have an arbritrary nonzero amount of mutators.
     pub fn with_mutator(mut self, mutator: Mutator) -> Self {
         if self.effects.is_empty() {
             self.effects = vec![Effect::new(&self.key.clone()).with_mutator(mutator)];

@@ -1,3 +1,5 @@
+//! Types regarding planning
+
 use crate::prelude::*;
 use bevy_ecs::entity_disabling::Disabled;
 use bevy_platform::collections::HashMap;
@@ -107,6 +109,7 @@ pub(crate) fn update_planner_local_state(
     Ok(())
 }
 
+/// A formulated plan. This is created and inserted into [`Planner`] for you when you trigger [`MakePlan`].
 #[derive(Debug, Clone, Reflect, PartialEq)]
 pub struct Plan {
     /// Queue of action keys, last is current
@@ -290,11 +293,11 @@ pub(crate) fn execute_plan(
                     // action_component.remove(&mut commands, entity);
                     // WARN remove all possible actions in order to avoid race conditions for now
                     for (_, (_, component)) in planner.actions_map.iter() {
-                        component.remove(&mut commands, entity);
+                        component.try_remove(&mut commands, entity);
                     }
                 }
 
-                action_component.insert(&mut commands, entity);
+                action_component.try_insert(&mut commands, entity);
                 planner.current_action = Some(found_action.clone());
             }
             None => {

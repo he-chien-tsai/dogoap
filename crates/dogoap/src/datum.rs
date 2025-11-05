@@ -6,9 +6,13 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 #[derive(Clone, Debug, PartialOrd, Copy)]
 #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub enum Datum {
+    /// Represents a boolean value.
     Bool(bool),
+    /// Represents an integer value.
     I64(i64),
+    /// Represents a floating-point value.
     F64(f64),
+    /// Represents an enum value cast to `usize`.
     Enum(usize),
 }
 
@@ -63,6 +67,9 @@ impl PartialEq for Datum {
 impl Eq for Datum {}
 
 impl Datum {
+    /// Calculates the difference between two [`Datum`] values.
+    ///
+    /// Panics if the two values are of different types.
     pub fn distance(&self, other: &Datum) -> u64 {
         match (self, other) {
             (Datum::Bool(a), Datum::Bool(b)) => {

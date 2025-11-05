@@ -1,3 +1,5 @@
+//! The main entry plugin
+
 use bevy_ecs::intern::Interned;
 use bevy_ecs::schedule::ScheduleLabel;
 

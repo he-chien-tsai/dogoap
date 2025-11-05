@@ -9,20 +9,23 @@ use dogoap::prelude::*;
 /// Used for adding/removing current [`Action`] our planner tells us to perform
 #[reflect_trait]
 pub trait InserterComponent: Send + Sync + 'static {
-    fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity);
-    fn remove(&self, commands: &mut Commands, entity_to_remove_from: Entity);
+    /// Calls [`Commands::try_insert`] with the underlying component
+    fn try_insert(&self, commands: &mut Commands, entity_to_insert_to: Entity);
+
+    /// Calls [`Commands::try_remove`] with the underlying component
+    fn try_remove(&self, commands: &mut Commands, entity_to_remove_from: Entity);
 }
 
 impl<T> InserterComponent for T
 where
     T: Component + Clone + Send + Sync + 'static,
 {
-    fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity) {
+    fn try_insert(&self, commands: &mut Commands, entity_to_insert_to: Entity) {
         commands
             .entity(entity_to_insert_to)
             .try_insert(T::clone(self));
     }
-    fn remove(&self, commands: &mut Commands, entity_to_remove_from: Entity) {
+    fn try_remove(&self, commands: &mut Commands, entity_to_remove_from: Entity) {
         commands.entity(entity_to_remove_from).try_remove::<T>();
     }
 }
@@ -56,7 +59,9 @@ impl fmt::Debug for dyn InserterComponent {
 #[bevy_trait_query::queryable]
 #[reflect_trait]
 pub trait DatumComponent: Send + Sync {
+    /// Gets the string identifier for the datum.
     fn field_key(&self) -> String;
+    /// Gets the underlying datum.
     fn field_value(&self) -> Datum;
 }
 
@@ -103,21 +108,33 @@ pub trait ActionComponent: Send + Sync {
     fn action_type_name(&self) -> &'static str;
 }
 
+/// Derivable trait for enums to be used as [`Datum`].
 pub trait EnumDatum: Send + Sync {
+    /// Gets the underlying enum value.
     fn datum(self) -> Datum;
 }
 
 /// Internal trait implemented by `#[derive(DatumComponent)]`
 pub trait Precondition<T> {
+    /// Returns the string representation of this type and a comparison for the concept of `==`.
     fn is(val: T) -> (String, Compare);
+
+    /// Returns the string representation of this type and a comparison for the concept of `!=`.
     fn is_not(val: T) -> (String, Compare);
+
+    /// Returns the string representation of this type and a comparison for the concept of `>`.
     fn is_more(val: T) -> (String, Compare);
+
+    /// Returns the string representation of this type and a comparison for the concept of `<`.
     fn is_less(val: T) -> (String, Compare);
 }
 
 /// Internal trait implemented by `#[derive(DatumComponent)]` in order to mutate
 pub trait MutatorTrait<T> {
+    /// Returns a [`Mutator`] that sets the value of the component to the given value.
     fn set(val: T) -> Mutator;
+    /// Returns a [`Mutator`] that increases the value of the component by the given value.
     fn increase(val: T) -> Mutator;
+    /// Returns a [`Mutator`] that decreases the value of the component by the given value.
     fn decrease(val: T) -> Mutator;
 }

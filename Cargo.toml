@@ -49,8 +49,7 @@ crossbeam-channel = "0.5"
 bevy = { version = "0.17.2", default-features = true, features = ["track_location"] }
 
 [workspace.lints.rust]
-# Todo: enable this once we have better docs
-#missing_docs = "warn"
+missing_docs = "warn"
 unused_qualifications = "warn"
 
 [workspace.lints.clippy]

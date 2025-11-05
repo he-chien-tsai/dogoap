@@ -24,6 +24,7 @@ pub type InternalData = BTreeMap<String, Datum>;
 #[derive(Debug, Clone, Eq, PartialEq, Default)]
 #[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub struct LocalState {
+    /// The data stored in this local state
     pub data: InternalData,
 }
 
@@ -41,6 +42,7 @@ impl LocalState {
         self
     }
 
+    /// The total distance to the goal in terms of differences between the goal's requirements and the local state's data
     pub fn distance_to_goal(&self, goal: &Goal) -> u64 {
         goal.requirements
             .iter()

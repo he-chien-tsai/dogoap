@@ -1,3 +1,5 @@
+//! Conveniece macros
+
 /// Creates a [`Planner`](crate::prelude::Planner) from
 /// - A list of actions
 /// - A list of states
