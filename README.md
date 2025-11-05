@@ -50,10 +50,6 @@ fn setup(mut commands: Commands) {
         goals: [goal],
     });
 
-    // register our types
-    register_components!(IsHungry);
-    register_actions!(EatAction);
-
     // Add `planner` + `components` to your Entity, or spawn a new one
     commands
         .spawn((Name::new("Planner"), planner, components))
@@ -70,6 +66,11 @@ fn handle_eat_action(
         commands.entity(entity).remove::<EatAction>();
     }
 }
+
+
+// register our types
+register_components!(app, IsHungry);
+register_actions!(app, EatAction);
 ```
 
 Once you run this code, the planner will automatically figure out that the entity needs to execute the EatAction in order to set IsHungry to false, and your defined System handles the actual logic of the action.
