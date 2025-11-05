@@ -2,6 +2,7 @@
 
 use bevy::prelude::*;
 use bevy_dogoap::prelude::*;
+use bevy_platform::collections::HashMap;
 use dogoap::simple::simple_action;
 
 // These are just handy strings so we don't fuck it up later.
@@ -74,25 +75,22 @@ fn startup(mut commands: Commands) {
     let sleep_action = simple_action(SLEEP_ACTION, IS_TIRED_KEY, Datum::Bool(false));
 
     // Verbose way of defining an actions_map that the planner needs
-    // let actions_map = HashMap::from([
-    //     (
-    //         EAT_ACTION.to_string(),
-    //         (
-    //             eat_action.clone(),
-    //             Box::new(EatAction {}) as Box<dyn MarkerComponent>,
-    //         ),
-    //     ),
-    //     (
-    //         SLEEP_ACTION.to_string(),
-    //         (
-    //             sleep_action.clone(),
-    //             Box::new(SleepAction {}) as Box<dyn MarkerComponent>,
-    //         ),
-    //     ),
-    // ]);
-
-    // But we have a handy macro that kind of makes it a lot easier for us!
-    let actions_map = create_action_map!((EatAction, eat_action), (SleepAction, sleep_action));
+    let actions_map = HashMap::from([
+        (
+            EAT_ACTION.to_string(),
+            (
+                eat_action.clone(),
+                Box::new(EatAction) as Box<dyn InserterComponent>,
+            ),
+        ),
+        (
+            SLEEP_ACTION.to_string(),
+            (
+                sleep_action.clone(),
+                Box::new(SleepAction) as Box<dyn InserterComponent>,
+            ),
+        ),
+    ]);
 
     let entity = commands.spawn_empty().id();
 
