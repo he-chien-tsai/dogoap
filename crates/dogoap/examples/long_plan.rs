@@ -43,7 +43,7 @@ fn main() {
     let effects = get_effects_from_plan(plan.clone().unwrap().0).collect::<Vec<_>>();
     assert_eq!(11, effects.len());
 
-    println!("{}", serialize_plan_pretty(plan.clone().unwrap()));
+    println!("{}", format_plan(plan.clone().unwrap()));
 
     // visualize_plan(plan.unwrap(), "my-plan.dot");
 

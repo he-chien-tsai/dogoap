@@ -19,7 +19,7 @@ fn main() {
 
     println!("{plan:#?}");
 
-    println!("{}", serialize_plan_pretty(plan.unwrap()));
+    println!("{}", format_plan(plan.unwrap()));
 
     println!();
     println!("[Everything went as expected!]");

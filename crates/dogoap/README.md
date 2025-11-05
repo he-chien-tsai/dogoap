@@ -58,5 +58,5 @@ let actions: Vec<Action> = vec![eat_action];
 
 let plan = make_plan(&start, &actions[..], &goal);
 
-println!("{}", serialize_plan_pretty(plan.unwrap()));
+println!("{}", format_plan(plan.unwrap()));
 ```

@@ -31,7 +31,9 @@ pub fn apply_mutator(data: &mut InternalData, mutator: &Mutator) {
     }
 }
 
-pub fn serialize_mutators_pretty(mutators: Vec<Mutator>) -> String {
+/// Formats a human-readable version of a list of [`Mutator`]s.
+/// Used in [`format_plan`](crate::prelude::format_plan).
+pub fn format_mutators(mutators: Vec<Mutator>) -> String {
     let mut output = String::new();
     for mutator in mutators {
         match mutator {

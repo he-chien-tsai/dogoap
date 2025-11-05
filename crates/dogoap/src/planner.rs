@@ -4,7 +4,7 @@ use crate::{
     effect::Effect,
     goal::Goal,
     localstate::LocalState,
-    mutator::{apply_mutator, serialize_mutators_pretty},
+    mutator::{apply_mutator, format_mutators},
 };
 
 /// A Node holds things can return a state, used for path finding
@@ -129,10 +129,10 @@ pub fn get_effects_from_plan(plan: impl IntoIterator<Item = Node>) -> impl Itera
     })
 }
 
-/// Prints a human-readable version of a plan from [`make_plan`] that shows
+/// Formats a human-readable version of a plan from [`make_plan`] that shows
 /// what [`Action`]s needs to be executed and what the results of each Action is
 #[must_use]
-pub fn serialize_plan_pretty(plan: (Vec<Node>, usize)) -> String {
+pub fn format_plan(plan: (Vec<Node>, usize)) -> String {
     let mut output = String::new();
     let nodes = plan.0;
     let cost = plan.1;
@@ -142,7 +142,7 @@ pub fn serialize_plan_pretty(plan: (Vec<Node>, usize)) -> String {
             Node::Effect(effect) => {
                 output.push_str(&format!("\t\t= DO ACTION {:#?}\n", effect.action));
                 output.push_str("\t\tMUTATES:\n");
-                output.push_str(&serialize_mutators_pretty(effect.mutators));
+                output.push_str(&format_mutators(effect.mutators));
                 last_state = effect.state.clone();
             }
             Node::State(s) => {

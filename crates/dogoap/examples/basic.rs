@@ -24,7 +24,7 @@ fn main() {
 
     let plan = make_plan(&start, &actions[..], &goal);
 
-    println!("{}", serialize_plan_pretty(plan.unwrap()));
+    println!("{}", format_plan(plan.unwrap()));
 
     println!();
     println!("[Everything went as expected!]");
