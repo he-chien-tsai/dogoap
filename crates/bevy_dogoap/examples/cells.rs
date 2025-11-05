@@ -202,13 +202,13 @@ fn handle_move_to(
 fn handle_go_to_food_action(
     mut commands: Commands,
     mut query: Query<
-        (Entity, &GoToFoodAction, &Transform, &mut AtFood),
-        (Without<Food>, Without<MoveTo>),
+        (Entity, &Transform, &mut AtFood),
+        (With<GoToFoodAction>, Without<Food>, Without<MoveTo>),
     >,
     q_food: Query<(Entity, &Transform), With<Food>>,
     mut targeted_food: Local<HashMap<Entity, Entity>>,
 ) {
-    for (entity, _action, t_entity, mut at_food) in query.iter_mut() {
+    for (entity, t_entity, mut at_food) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_food.iter().map(|(e, t)| (e, *t)).collect();
 
@@ -268,18 +268,11 @@ fn find_closest(origin: Vec3, items: Vec<(Entity, Transform)>) -> Vec<(Entity, V
 
 fn handle_replicate_action(
     mut commands: Commands,
-    mut query: Query<(
-        Entity,
-        &ReplicateAction,
-        &mut IsReplicating,
-        &mut Hunger,
-        &Cell,
-        &Transform,
-    )>,
+    mut query: Query<(Entity, &mut Hunger, &Cell, &Transform), With<ReplicateAction>>,
     mut timers: Local<HashMap<Entity, Timer>>,
     time: Res<Time>,
 ) {
-    for (entity, _action, _field, mut hunger, cell, transform) in query.iter_mut() {
+    for (entity, mut hunger, cell, transform) in query.iter_mut() {
         match timers.get_mut(&entity) {
             Some(progress) => {
                 if progress.tick(time.delta()).just_finished() {
@@ -302,10 +295,13 @@ fn handle_replicate_action(
 
 fn handle_eat_action(
     mut commands: Commands,
-    mut query: Query<(Entity, &EatAction, &Transform, &mut Hunger, &mut AtFood), Without<Food>>,
+    mut query: Query<
+        (Entity, &Transform, &mut Hunger, &mut AtFood),
+        (With<EatAction>, Without<Food>),
+    >,
     q_food: Query<(Entity, &Transform), With<Food>>,
 ) {
-    for (entity, _action, t_entity, mut hunger, mut at_food) in query.iter_mut() {
+    for (entity, t_entity, mut hunger, mut at_food) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_food.iter().map(|(e, t)| (e, *t)).collect();
         let foods = find_closest(origin, items);
@@ -322,19 +318,16 @@ fn handle_eat_action(
             // Before we consume this food, make another query to ensure
             // it's still there, as it could have been consumed by another
             // Cell in the same frame, during the query.iter() loop
-            match q_food.get(*e_food) {
-                Ok(_) => {
-                    hunger.0 -= 10.0;
+            if q_food.contains(*e_food) {
+                hunger.0 -= 10.0;
 
-                    if hunger.0 < 0.0 {
-                        hunger.0 = 0.0;
-                    }
-                    commands.entity(*e_food).despawn();
+                if hunger.0 < 0.0 {
+                    hunger.0 = 0.0;
                 }
+                commands.entity(*e_food).despawn();
+            } else {
                 // Don't consume as it doesn't exists
-                Err(_) => {
-                    warn!("Tried to consume non-existing food");
-                }
+                warn!("Tried to consume non-existing food");
             }
         }
 

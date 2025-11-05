@@ -492,8 +492,8 @@ fn handle_go_to_order_desk(
     }
 }
 
-fn handle_wait_for_order(mut query: Query<(&Customer, &WaitForOrder)>, q_order: Query<&Order>) {
-    for (customer, _action) in query.iter_mut() {
+fn handle_wait_for_order(mut query: Query<&Customer, With<WaitForOrder>>, q_order: Query<&Order>) {
+    for customer in query.iter_mut() {
         match customer.order {
             Some(e_order) => {
                 let order = q_order.get(e_order).expect("Impossible!");
@@ -513,11 +513,11 @@ fn handle_wait_for_order(mut query: Query<(&Customer, &WaitForOrder)>, q_order: 
 fn handle_place_order(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &mut Customer, &PlaceOrder, &mut PlacedOrder)>,
+    mut query: Query<(Entity, &mut Customer, &mut PlacedOrder), With<PlaceOrder>>,
     mut q_order_desks: Query<&mut OrderDesk>,
     mut progresses: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, mut customer, _action, mut placed_order) in query.iter_mut() {
+    for (entity, mut customer, mut placed_order) in query.iter_mut() {
         let mut order_desk = q_order_desks
             .single_mut()
             .expect("Only one order desk expected!");
@@ -556,17 +556,19 @@ fn handle_place_order(
 fn handle_pickup_lemonade(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(
-        Entity,
-        &PickupLemonade,
-        &mut CarryingItem,
-        &mut OrderReady,
-        &mut PlacedOrder,
-        &mut AtOrderDesk,
-    )>,
+    mut query: Query<
+        (
+            Entity,
+            &mut CarryingItem,
+            &mut OrderReady,
+            &mut PlacedOrder,
+            &mut AtOrderDesk,
+        ),
+        With<PickupLemonade>,
+    >,
     mut progresses: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, _action, mut state, mut order_ready, mut placed_order, mut at_order_desk) in
+    for (entity, mut state, mut order_ready, mut placed_order, mut at_order_desk) in
         query.iter_mut()
     {
         match progresses.get_mut(&entity) {
@@ -600,10 +602,10 @@ fn handle_pickup_lemonade(
 fn handle_drink_lemonade(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &DrinkLemonade, &mut CarryingItem, &mut Thirst)>,
+    mut query: Query<(Entity, &mut CarryingItem, &mut Thirst), With<DrinkLemonade>>,
     mut progresses: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, _action, mut state, mut thirst) in query.iter_mut() {
+    for (entity, mut state, mut thirst) in query.iter_mut() {
         match progresses.get_mut(&entity) {
             Some(progress) => {
                 if progress.tick(time.delta()).just_finished() {

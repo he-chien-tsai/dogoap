@@ -63,9 +63,9 @@ fn setup(mut commands: Commands) {
 // System for handling EatAction
 fn handle_eat_action(
     mut commands: Commands,
-    mut query: Query<(Entity, &EatAction, &mut IsHungry)>,
+    mut query: Query<(Entity, &mut IsHungry), With<EatAction>>,
 ) {
-    for (entity, _eat_action, mut is_hungry) in query.iter_mut() {
+    for (entity, mut is_hungry) in query.iter_mut() {
         is_hungry.0 = false;
         commands.entity(entity).remove::<EatAction>();
     }

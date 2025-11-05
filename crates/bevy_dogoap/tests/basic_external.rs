@@ -52,9 +52,9 @@ fn start_new_plan(mut commands: Commands, planner: Query<Entity, With<Planner>>)
 
 fn handle_eat_action(
     mut commands: Commands,
-    mut query: Query<(Entity, &EatAction, &mut IsHungry)>,
+    mut query: Query<(Entity, &mut IsHungry), With<EatAction>>,
 ) {
-    for (entity, _action, mut is_hungry) in query.iter_mut() {
+    for (entity, mut is_hungry) in query.iter_mut() {
         info!("We're doing EatAction!");
         is_hungry.0 = false;
         commands.entity(entity).remove::<EatAction>();
@@ -64,9 +64,9 @@ fn handle_eat_action(
 
 fn handle_sleep_action(
     mut commands: Commands,
-    mut query: Query<(Entity, &SleepAction, &mut IsTired)>,
+    mut query: Query<(Entity, &mut IsTired), With<SleepAction>>,
 ) {
-    for (entity, _action, mut is_tired) in query.iter_mut() {
+    for (entity, mut is_tired) in query.iter_mut() {
         info!("We're doing SleepAction!");
         is_tired.0 = false;
         commands.entity(entity).remove::<SleepAction>();

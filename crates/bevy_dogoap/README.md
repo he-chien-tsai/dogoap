@@ -46,9 +46,9 @@ fn startup(mut commands: Commands) {
 // Create our system that handles executing of the EatAction
 fn handle_eat_action(
     mut commands: Commands,
-    mut query: Query<(Entity, &EatAction, &mut IsHungry)>,
+    mut query: Query<(Entity, &mut IsHungry), With<EatAction>>,
 ) {
-    for (entity, _eat_action, mut need) in query.iter_mut() {
+    for (entity, mut need) in query.iter_mut() {
         // We set IsHungry to false
         need.0 = false;
         // And remove the action from our entity as we're done with this action

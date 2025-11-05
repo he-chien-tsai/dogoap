@@ -353,10 +353,13 @@ fn go_to_location<T>(
 fn handle_go_to_house_action(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &GoToHouseAction, &mut Transform, &mut AtLocation), Without<House>>,
+    mut query: Query<
+        (Entity, &mut Transform, &mut AtLocation),
+        (With<GoToHouseAction>, Without<House>),
+    >,
     t_house: Single<&Transform, With<House>>,
 ) {
-    for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
+    for (entity, mut t_entity, mut at_location) in query.iter_mut() {
         go_to_location::<GoToHouseAction>(
             &mut at_location,
             time.delta_secs(),
@@ -373,12 +376,12 @@ fn handle_go_to_smelter_action(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<
-        (Entity, &GoToSmelterAction, &mut Transform, &mut AtLocation),
-        Without<Smelter>,
+        (Entity, &mut Transform, &mut AtLocation),
+        (With<GoToSmelterAction>, Without<Smelter>),
     >,
     t_smelter: Single<&Transform, With<Smelter>>,
 ) {
-    for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
+    for (entity, mut t_entity, mut at_location) in query.iter_mut() {
         go_to_location::<GoToSmelterAction>(
             &mut at_location,
             time.delta_secs(),
@@ -394,10 +397,13 @@ fn handle_go_to_smelter_action(
 fn handle_go_to_outside_action(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &GoToOutsideAction, &mut Transform, &mut AtLocation), Without<House>>,
+    mut query: Query<
+        (Entity, &mut Transform, &mut AtLocation),
+        (With<GoToOutsideAction>, Without<House>),
+    >,
     t_house: Single<&Transform, With<House>>,
 ) {
-    for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
+    for (entity, mut t_entity, mut at_location) in query.iter_mut() {
         // Outside is slightly to the left of the house... Fight me
         let offset = Vec3::new(-30.0, 0.0, 0.0);
         let new_pos = t_house.translation + offset;
@@ -418,12 +424,12 @@ fn handle_go_to_merchant_action(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<
-        (Entity, &GoToMerchantAction, &mut Transform, &mut AtLocation),
-        Without<Merchant>,
+        (Entity, &mut Transform, &mut AtLocation),
+        (With<GoToMerchantAction>, Without<Merchant>),
     >,
     t_destination: Single<&Transform, With<Merchant>>,
 ) {
-    for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
+    for (entity, mut t_entity, mut at_location) in query.iter_mut() {
         go_to_location::<GoToMerchantAction>(
             &mut at_location,
             time.delta_secs(),
@@ -440,12 +446,12 @@ fn handle_go_to_mushroom_action(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<
-        (Entity, &GoToMushroomAction, &mut Transform, &mut AtLocation),
-        Without<Mushroom>,
+        (Entity, &mut Transform, &mut AtLocation),
+        (With<GoToMushroomAction>, Without<Mushroom>),
     >,
     q_mushrooms: Query<(Entity, &Transform), With<Mushroom>>,
 ) {
-    for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
+    for (entity, mut t_entity, mut at_location) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_mushrooms.iter().map(|(e, t)| (e, *t)).collect();
         let Some(mushroom) = find_closest(origin, items) else {
@@ -467,10 +473,13 @@ fn handle_go_to_mushroom_action(
 fn handle_go_to_ore_action(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &GoToOreAction, &mut Transform, &mut AtLocation), Without<Ore>>,
+    mut query: Query<
+        (Entity, &mut Transform, &mut AtLocation),
+        (With<GoToOreAction>, Without<Ore>),
+    >,
     q_world_resource: Query<(Entity, &Transform), With<Ore>>,
 ) {
-    for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
+    for (entity, mut t_entity, mut at_location) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> =
             q_world_resource.iter().map(|(e, t)| (e, *t)).collect();
@@ -513,18 +522,12 @@ fn find_closest(origin: Vec3, items: Vec<(Entity, Transform)>) -> Option<(Entity
 fn handle_eat_action(
     mut commands: Commands,
     mut query: Query<
-        (
-            Entity,
-            &EatAction,
-            &mut Transform,
-            &mut Hunger,
-            &mut AtLocation,
-        ),
-        Without<Mushroom>,
+        (Entity, &mut Transform, &mut Hunger, &mut AtLocation),
+        (With<EatAction>, Without<Mushroom>),
     >,
     q_mushrooms: Query<(Entity, &Transform), With<Mushroom>>,
 ) {
-    for (entity, _action, t_entity, mut hunger, mut at_location) in query.iter_mut() {
+    for (entity, t_entity, mut hunger, mut at_location) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_mushrooms.iter().map(|(e, t)| (e, *t)).collect();
         let Some(mushroom) = find_closest(origin, items) else {
@@ -597,18 +600,17 @@ fn handle_mine_ore_action(
     mut query: Query<
         (
             Entity,
-            &MineOreAction,
             &mut Transform,
             &mut HasOre,
             &mut AtLocation,
             &mut Energy,
         ),
-        Without<Ore>,
+        (With<MineOreAction>, Without<Ore>),
     >,
     q_ores: Query<(Entity, &Transform), With<Ore>>,
     mut mining_progress: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, _action, t_entity, mut has_ore, mut at_location, mut energy) in query.iter_mut() {
+    for (entity, t_entity, mut has_ore, mut at_location, mut energy) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_ores.iter().map(|(e, t)| (e, *t)).collect();
         let Some(closest) = find_closest(origin, items) else {
@@ -651,19 +653,18 @@ fn handle_smelt_ore_action(
     mut query: Query<
         (
             Entity,
-            &SmeltOreAction,
             &mut Transform,
             &mut Energy,
             &mut HasOre,
             &mut HasMetal,
             &mut AtLocation,
         ),
-        Without<Smelter>,
+        (With<SmeltOreAction>, Without<Smelter>),
     >,
     q_smelters: Query<(Entity, &Transform), With<Smelter>>,
     mut progress: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, _action, t_entity, mut energy, mut has_ore, mut has_metal, mut at_location) in
+    for (entity, t_entity, mut energy, mut has_ore, mut has_metal, mut at_location) in
         query.iter_mut()
     {
         let origin = t_entity.translation;
@@ -700,21 +701,12 @@ fn handle_sell_metal_action(
     time: Res<Time>,
     mut commands: Commands,
     mut query: Query<
-        (
-            Entity,
-            &SellMetalAction,
-            &mut Transform,
-            &mut HasMetal,
-            &mut GoldAmount,
-            &mut AtLocation,
-        ),
-        Without<Smelter>,
+        (Entity, &mut HasMetal, &mut GoldAmount, &mut AtLocation),
+        (With<SellMetalAction>, Without<Smelter>),
     >,
     mut progress: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, _action, _t_entity, mut has_metal, mut gold_amount, mut at_location) in
-        query.iter_mut()
-    {
+    for (entity, mut has_metal, mut gold_amount, mut at_location) in query.iter_mut() {
         action_with_progress(&mut progress, entity, &time, 1.0, |is_completed| {
             if is_completed {
                 has_metal.0 = false;

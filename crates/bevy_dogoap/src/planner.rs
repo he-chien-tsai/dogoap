@@ -102,11 +102,11 @@ impl Planner {
 
 /// This system "syncs" our [`DatumComponent`]s with the `LocalState` in the [`Planner`]
 pub(crate) fn update_planner_local_state(
-    local_field_components: Query<(Entity, &dyn DatumComponent)>,
+    local_field_components: Query<&dyn DatumComponent>,
     mut q_planner: Query<(Entity, &mut Planner)>,
 ) -> Result {
     for (entity, mut planner) in q_planner.iter_mut() {
-        let (_c_entity, components) = local_field_components.get(entity).map_err(|_| "Didn't find any DatumComponents, make sure you called register_components with all Components you want to use with the planner")?;
+        let components = local_field_components.get(entity).map_err(|_| "Didn't find any DatumComponents, make sure you called register_components with all Components you want to use with the planner")?;
         for component in components {
             planner
                 .state
