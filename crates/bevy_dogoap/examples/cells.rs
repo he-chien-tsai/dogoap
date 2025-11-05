@@ -95,7 +95,6 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
     });
 
     planner.remove_goal_on_no_plan_found = false; // Don't remove the goal
-    planner.always_plan = true; // Re-calculate our plan whenever we can
     planner.current_goal = Some(goal.clone());
 
     let text_style = TextFont {
@@ -121,7 +120,9 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
                 bevy::sprite::Anchor::TOP_LEFT,
                 StateDebugText,
             ));
-        });
+        })
+        // start an initial plan
+        .trigger(Plan::from);
 }
 
 fn startup(mut commands: Commands, window: Single<&Window>) {
@@ -186,8 +187,8 @@ fn handle_move_to(
                     let direction = (destination - transform.translation).normalize();
                     transform.translation += direction * cell.speed * time.delta_secs();
                 } else {
+                    info!("Reached destination");
                     commands.entity(entity).remove::<MoveTo>();
-                    // commands.entity(destination_entity).remove::<BusyObject>();
                 }
             }
             Err(_) => {
@@ -240,10 +241,10 @@ fn handle_go_to_food_action(
         targeted_food.insert(*e_food, entity);
 
         if *distance > 5.0 {
-            // commands.entity(e_food).insert(BusyObject(entity));
             commands.entity(entity).insert(MoveTo(*t_food, *e_food));
         } else {
             // Consume food!
+            info!("Consumed food");
             at_food.0 = true;
             commands.entity(entity).remove::<GoToFoodAction>();
             targeted_food.remove(e_food);
@@ -272,14 +273,13 @@ fn handle_replicate_action(
         &ReplicateAction,
         &mut IsReplicating,
         &mut Hunger,
-        &mut Planner,
         &Cell,
         &Transform,
     )>,
     mut timers: Local<HashMap<Entity, Timer>>,
     time: Res<Time>,
 ) {
-    for (entity, _action, _field, mut hunger, mut planner, cell, transform) in query.iter_mut() {
+    for (entity, _action, _field, mut hunger, cell, transform) in query.iter_mut() {
         match timers.get_mut(&entity) {
             Some(progress) => {
                 if progress.tick(time.delta()).just_finished() {
@@ -288,14 +288,13 @@ fn handle_replicate_action(
                     commands.entity(entity).remove::<ReplicateAction>();
                     hunger.0 += 20.0;
                     timers.remove(&entity);
-                    planner.always_plan = true;
+                    commands.entity(entity).trigger(Plan::from);
                 } else {
                     hunger.0 += 6.0 * time.delta_secs_f64();
                 }
             }
             None => {
                 timers.insert(entity, Timer::from_seconds(3.0, TimerMode::Once));
-                planner.always_plan = false;
             }
         }
     }
@@ -360,7 +359,6 @@ fn over_time_needs_change(
         let val: f64 = r * time.delta_secs_f64();
         hunger.0 += val;
         if hunger.0 > 100.0 {
-            // hunger.0 = 100.0;
             commands.entity(entity).despawn();
             let translation = transform.translation;
             commands.spawn((
@@ -502,7 +500,8 @@ fn main() {
         print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
     );
 
-    register_components!(app, vec![Hunger, AtFood]);
+    register_components!(app, [Hunger, AtFood]);
+    register_actions!(app, [EatAction, GoToFoodAction, ReplicateAction]);
 
     app.run();
 }

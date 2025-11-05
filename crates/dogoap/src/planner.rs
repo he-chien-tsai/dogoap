@@ -121,18 +121,12 @@ pub fn make_plan(
     make_plan_with_strategy(PlanningStrategy::StartToGoal, start, actions, goal)
 }
 
-/// Returns a Vector of all [`Effect`]s from a given plan
-pub fn get_effects_from_plan(plan: Vec<Node>) -> Vec<Effect> {
-    let mut nodes = vec![];
-
-    for node in plan {
-        match node {
-            Node::Effect(c) => nodes.push(c),
-            Node::State(_s) => {}
-        }
-    }
-
-    nodes
+/// Returns an iterator of all [`Effect`]s from a given plan
+pub fn get_effects_from_plan(plan: impl IntoIterator<Item = Node>) -> impl Iterator<Item = Effect> {
+    plan.into_iter().filter_map(|node| match node {
+        Node::Effect(effect) => Some(effect),
+        Node::State(_) => None,
+    })
 }
 
 /// Prints a human-readable version of a plan from [`make_plan`] that shows

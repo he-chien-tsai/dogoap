@@ -10,10 +10,10 @@
 //! Worker - Wants to increase income of business
 //!
 //! Customer has Actions:
-//! - `GoToServingDesk`, `MakeOrder`, `ConsumeOrder`, `ConsumeInventory`
+//! - `GoToOrderDesk`, `MakeOrder`, `ConsumeOrder`, `ConsumeInventory`
 //!
 //! Worker has Actions:
-//! - `GoToServingDesk`, `TakeOrder`, `MakeProduct`, `MoveProduct`, `HandOverOrder`
+//! - `GoToOrderDesk`, `TakeOrder`, `MakeProduct`, `MoveProduct`, `HandOverOrder`
 //!
 //! Sequence Diagram for the full flow of actions (paste into <https://sequencediagram.org/)>:
 //!
@@ -29,12 +29,15 @@
 //! Customer->Order Desk: `PickupLemonade`
 //! Customer->Customer: `DrinkLemonade`
 
-use std::collections::{HashMap, VecDeque};
+use std::{
+    collections::{HashMap, VecDeque},
+    time::Duration,
+};
 
 use bevy::{
     color::palettes::css::*,
-    prelude::Camera2d,
-    prelude::*,
+    prelude::{Camera2d, *},
+    time::common_conditions::on_timer,
     window::{Window, WindowPlugin},
 };
 use bevy_dogoap::prelude::*;
@@ -44,7 +47,7 @@ fn main() {
     // Customer components + actions
     register_components!(
         app,
-        vec![
+        [
             Thirst,
             CarryingItem,
             PlacedOrder,
@@ -55,7 +58,7 @@ fn main() {
     );
     register_actions!(
         app,
-        vec![
+        [
             DrinkLemonade,
             PickupLemonade,
             WaitForOrder,
@@ -66,12 +69,9 @@ fn main() {
     // Worker components + actions
     register_components!(
         app,
-        vec![Energy, AtLemonadeMaker, ServedOrder, ShouldGoToOrderDesk]
+        [Energy, AtLemonadeMaker, ServedOrder, ShouldGoToOrderDesk]
     );
-    register_actions!(
-        app,
-        vec![Rest, ServeOrder, ProduceLemonade, GoToLemonadeMaker]
-    );
+    register_actions!(app, [Rest, ServeOrder, ProduceLemonade, GoToLemonadeMaker]);
 
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
@@ -89,6 +89,7 @@ fn main() {
     .add_systems(
         FixedUpdate,
         (
+            make_plan.run_if(on_timer(Duration::from_millis(500))),
             handle_pickup_lemonade,
             handle_drink_lemonade,
             handle_place_order,
@@ -262,7 +263,6 @@ fn setup(mut commands: Commands) {
         });
 
         planner.remove_goal_on_no_plan_found = false; // Don't remove the goal
-        planner.always_plan = true; // Re-calculate our plan whenever we can
         planner.current_goal = Some(goal.clone());
 
         commands
@@ -270,6 +270,7 @@ fn setup(mut commands: Commands) {
                 Agent,
                 Name::new("Customer"),
                 Customer::default(),
+                Visibility::default(),
                 planner,
                 components,
                 Transform::from_xyz(-200.0, -100.0, 1.0),
@@ -347,6 +348,7 @@ fn setup(mut commands: Commands) {
             .spawn((
                 Agent,
                 Name::new("Worker"),
+                Visibility::default(),
                 Worker,
                 planner,
                 components,
@@ -371,6 +373,7 @@ fn setup(mut commands: Commands) {
             Name::new("Lemonade Maker"),
             LemonadeMaker,
             Transform::from_xyz(100.0, 0.0, 1.0),
+            Visibility::default(),
         ))
         .with_children(|subcommands| {
             subcommands.spawn((
@@ -390,6 +393,7 @@ fn setup(mut commands: Commands) {
             Name::new("Order Desk"),
             OrderDesk::default(),
             Transform::from_xyz(-100.0, 0.0, 1.0),
+            Visibility::default(),
         ))
         .with_children(|subcommands| {
             subcommands.spawn((
@@ -407,12 +411,19 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);
 }
 
+fn make_plan(planners: Query<Entity, With<Planner>>, mut commands: Commands) {
+    for planner in planners.iter() {
+        commands.entity(planner).trigger(Plan::from);
+    }
+}
+
 fn handle_call_worker_to_empty_order_desk(
     mut q_order_desks: Query<&mut OrderDesk>,
     mut q_workers: Query<
         (Entity, &mut ShouldGoToOrderDesk),
         (With<Worker>, Without<GoToOrderDesk>),
     >,
+    mut commands: Commands,
 ) {
     for mut order_desk in q_order_desks.iter_mut() {
         if order_desk.assigned_customer.is_some() && order_desk.assigned_worker.is_none() {
@@ -420,6 +431,7 @@ fn handle_call_worker_to_empty_order_desk(
             let (worker, mut should_go) = q_workers.iter_mut().next().expect("no workers");
             should_go.0 = true;
             order_desk.assigned_worker = Some(worker);
+            commands.entity(worker).insert(GoToOrderDesk);
         }
     }
 }
@@ -447,25 +459,20 @@ fn handle_go_to_order_desk(
     mut commands: Commands,
     mut q_order_desks: Query<(&Transform, &mut OrderDesk)>,
     mut query: Query<
-        (
-            Entity,
-            &Transform,
-            &GoToOrderDesk,
-            &mut AtOrderDesk,
-            Option<&Customer>,
-        ),
-        Without<MoveTo>,
+        (Entity, &Transform, &mut AtOrderDesk, Has<Customer>),
+        (With<GoToOrderDesk>, Without<MoveTo>),
     >,
 ) {
-    for (entity, transform, _action, mut state, customer) in query.iter_mut() {
+    for (entity, transform, mut state, customer) in query.iter_mut() {
         let (t_order_desk, mut order_desk) = q_order_desks
             .single_mut()
             .expect("Only one order desk expected!");
 
         // Offset to the left for customer, to the right for worker
-        let with_offset = match customer {
-            Some(_) => t_order_desk.translation + Vec3::new(-50.0, 0.0, 0.0),
-            None => t_order_desk.translation + Vec3::new(50.0, 0.0, 0.0),
+        let with_offset = if customer {
+            t_order_desk.translation + Vec3::new(-50.0, 0.0, 0.0)
+        } else {
+            t_order_desk.translation + Vec3::new(50.0, 0.0, 0.0)
         };
 
         let distance = with_offset.distance(transform.translation);
@@ -476,9 +483,10 @@ fn handle_go_to_order_desk(
             state.0 = true;
             commands.entity(entity).remove::<GoToOrderDesk>();
 
-            match customer {
-                Some(_) => order_desk.assigned_customer = Some(entity),
-                None => order_desk.can_take_order = true,
+            if customer {
+                order_desk.assigned_customer = Some(entity);
+            } else {
+                order_desk.can_take_order = true;
             };
         }
     }

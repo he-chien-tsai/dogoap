@@ -41,7 +41,7 @@ fn long_plan(strategy: PlanningStrategy) {
     let actions: Vec<Action> = vec![sleep_action, eat_action, rob_people];
 
     let plan = make_plan_with_strategy(strategy, &start, &actions[..], &goal);
-    let effects = get_effects_from_plan(plan.clone().unwrap().0);
+    let effects = get_effects_from_plan(plan.clone().unwrap().0).collect::<Vec<_>>();
 
     assert_eq!(11, effects.len());
     assert_eq!(expected_state, effects.last().unwrap().state);

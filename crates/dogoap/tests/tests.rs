@@ -31,7 +31,8 @@ fn test_basic_bool_setting() {
 
     let actions: Vec<Action> = vec![eat_action];
 
-    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0);
+    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0)
+        .collect::<Vec<_>>();
     assert_eq!(1, plan.len());
 
     let cons = plan.first().unwrap();
@@ -88,7 +89,8 @@ fn test_simple_action() {
 
     let actions: Vec<Action> = vec![eat_action];
 
-    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0);
+    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0)
+        .collect::<Vec<_>>();
     assert_eq!(1, plan.len());
 
     let cons = plan.first().unwrap();
@@ -120,7 +122,7 @@ fn test_two_bools() {
 
     let plan = make_plan(&start, &actions[..], &goal).unwrap();
 
-    let cons = get_effects_from_plan(plan.0);
+    let cons = get_effects_from_plan(plan.0).collect::<Vec<_>>();
     assert_eq!(2, cons.len());
 
     let first_cons = cons.first().unwrap();
@@ -184,7 +186,7 @@ fn test_four_bools() {
 
     let plan = make_plan(&start, &actions[..], &goal).unwrap();
 
-    let cons = get_effects_from_plan(plan.0);
+    let cons = get_effects_from_plan(plan.0).collect::<Vec<_>>();
     assert_eq!(4, cons.len());
 
     let first_cons = cons.first().unwrap();
@@ -243,7 +245,7 @@ fn test_enums() {
     let actions: Vec<Action> = vec![go_outside_action, go_to_market_action, go_to_ramen_action];
 
     let plan = make_plan(&start, &actions[..], &goal);
-    let effects = get_effects_from_plan(plan.unwrap().0);
+    let effects = get_effects_from_plan(plan.unwrap().0).collect::<Vec<_>>();
 
     assert_eq!(3, effects.len());
 
@@ -291,7 +293,8 @@ fn test_preconditions() {
 
     let actions: Vec<Action> = vec![eat_action, sleep_action];
 
-    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0);
+    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0)
+        .collect::<Vec<_>>();
     assert_eq!(3, plan.len());
 
     let first_cons = plan.first().unwrap();
@@ -326,7 +329,8 @@ fn test_int_increment() {
 
     let actions: Vec<Action> = vec![eat_action];
 
-    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0);
+    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0)
+        .collect::<Vec<_>>();
     assert_eq!(5, plan.len());
 
     for cons in &plan {
@@ -350,7 +354,8 @@ fn test_int_decrement() {
 
     let actions: Vec<Action> = vec![eat_action];
 
-    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0);
+    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0)
+        .collect::<Vec<_>>();
     assert_eq!(7, plan.len());
 
     for cons in &plan {
@@ -374,7 +379,8 @@ fn test_float_increment() {
 
     let actions: Vec<Action> = vec![eat_action];
 
-    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0);
+    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0)
+        .collect::<Vec<_>>();
     assert_eq!(5, plan.len());
 
     for cons in &plan {
@@ -399,7 +405,7 @@ fn test_greater_than_equals() {
     let actions: Vec<Action> = vec![eat_action];
 
     let plan = make_plan(&start, &actions[..], &goal).unwrap();
-    let effects = get_effects_from_plan(plan.0.clone());
+    let effects = get_effects_from_plan(plan.0.clone()).collect::<Vec<_>>();
 
     assert_eq!(9, effects.len());
 
@@ -449,7 +455,8 @@ fn test_long_plan() {
 
     let actions: Vec<Action> = vec![sleep_action, eat_action, rob_people];
 
-    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0);
+    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0)
+        .collect::<Vec<_>>();
 
     assert_eq!(50, plan.len());
 
@@ -481,7 +488,7 @@ fn test_prefer_lower_cost_plan() {
     let actions = [cheap_action, expensive_action];
 
     let plan = make_plan(&start, &actions[..], &goal).unwrap();
-    let effects = get_effects_from_plan(plan.0.clone());
+    let effects = get_effects_from_plan(plan.0.clone()).collect::<Vec<_>>();
 
     println!("Found plan:");
     println!("{plan:#?}");

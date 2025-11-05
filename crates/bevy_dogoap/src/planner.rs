@@ -36,17 +36,8 @@ pub struct Planner {
     pub actions_map: ActionsMap,
     #[reflect(ignore)]
     pub datum_components: DatumComponents,
-
-    // Some additional fields to control the execution
-    /// If the Planner should try to always come up with new plans based on the current goal
-    pub always_plan: bool,
     /// If the Planner should remove the current goal if it cannot find any plan to reach it
     pub remove_goal_on_no_plan_found: bool,
-    /// `plan_next_tick` works like a toggle, that once you've set it to true, it'll make a new plan once
-    /// then turn it to false. Combine with `always_plan` set to false and you can manually decide when
-    /// new plans should be made.
-    pub plan_next_tick: bool,
-
     /// Internal prepared vector of just [`Action`]
     actions_for_dogoap: Vec<Action>,
 }
@@ -69,12 +60,13 @@ struct Receiver<T>(T);
 /// We do it in a asyncronous manner as `make_plan` blocks and if it takes 100ms, we'll delay frames
 /// by 100ms...
 #[derive(Component)]
-pub struct ComputePlan(Receiver<Option<(Vec<Node>, usize)>>);
+pub(crate) struct AsyncPlanReceiver(Receiver<Option<Vec<Effect>>>);
 
 /// This Component gets added when the planner for an Entity is currently planning,
 /// and removed once a plan has been created. Normally this will take under 1ms,
 /// but if you have lots of actions and possible states, it can take longer
-#[derive(Component)]
+#[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct IsPlanning;
 
 impl Planner {
@@ -102,16 +94,14 @@ impl Planner {
             actions_map,
             current_action: None,
             current_plan: VecDeque::new(),
-            always_plan: true,
             remove_goal_on_no_plan_found: true,
-            plan_next_tick: false,
             actions_for_dogoap,
         }
     }
 }
 
 /// This system "syncs" our [`DatumComponent`]s with the `LocalState` in the [`Planner`]
-pub fn update_planner_local_state(
+pub(crate) fn update_planner_local_state(
     local_field_components: Query<(Entity, &dyn DatumComponent)>,
     mut q_planner: Query<(Entity, &mut Planner)>,
 ) -> Result {
@@ -127,49 +117,73 @@ pub fn update_planner_local_state(
     Ok(())
 }
 
-/// This system is responsible for finding [`Planner`]s that aren't alreay computing a new plan,
+/// Entity event that can be triggered on an entity that holds a [`Planner`]
+/// to kickstart a new plan. If a planner is already computing a plan, the event is ignored.
+#[derive(EntityEvent, Clone, Copy, Debug)]
+pub struct Plan {
+    /// The entity that holds the [`Planner`]
+    #[event_target]
+    pub planner: Entity,
+}
+
+impl From<Entity> for Plan {
+    fn from(entity: Entity) -> Self {
+        Self { planner: entity }
+    }
+}
+
+/// This observer is responsible for finding [`Planner`]s that aren't alreay computing a new plan,
 /// and creates a new task for generating a new plan
-pub fn create_planner_tasks(
+pub(crate) fn create_planner_tasks(
+    plan: On<Plan>,
     mut commands: Commands,
-    mut query: Query<(Entity, &mut Planner), Without<ComputePlan>>,
+    planner: Query<&Planner, Without<AsyncPlanReceiver>>,
 ) {
+    let entity = plan.planner;
+    let Ok(planner) = planner.get(entity) else {
+        debug!(
+            "Started planner on an entity {entity} that either is not a planner, is already computing a plan, or has been filtered out by a default filter. Ignoring."
+        );
+        return;
+    };
     #[cfg(feature = "compute-pool")]
     let thread_pool = AsyncComputeTaskPool::get();
 
-    for (entity, mut planner) in query.iter_mut() {
-        if (planner.always_plan || planner.plan_next_tick)
-            && let Some(goal) = planner.current_goal.clone()
-        {
-            planner.plan_next_tick = false;
-            let state = planner.state.clone();
-            let actions = planner.actions_for_dogoap.clone();
+    if let Some(goal) = planner.current_goal.clone() {
+        let state = planner.state.clone();
+        let actions = planner.actions_for_dogoap.clone();
 
-            #[cfg(feature = "compute-pool")]
-            let receiver = {
-                let (send, receiver) = crossbeam_channel::bounded(1);
-                thread_pool.spawn(async move {
-                        let start = Instant::now();
+        #[cfg(feature = "compute-pool")]
+        let receiver = {
+            let (send, receiver) = crossbeam_channel::bounded(1);
+            let future = async move {
+                let start = Instant::now();
 
-                        // WARN this is the part that can be slow for large search spaces and why we use AsyncComputePool
-                        let plan = make_plan(&state, &actions[..], &goal);
-                        let duration = start.elapsed();
+                // WARN this is the part that can be slow for large search spaces and why we use AsyncComputePool
+                let plan = make_plan(&state, &actions[..], &goal);
+                let duration = start.elapsed();
 
-                        if duration.as_millis() > 10 {
-                            let steps = plan.as_ref().map(|(nodes, _)| nodes.len()).unwrap_or_default();
-                            warn!("Planning duration for Entity {entity} was {duration:?} for {steps} steps");
-                        }
-
-                    send.send(plan).expect("Failed to send plan");
-                    }).detach();
-                receiver
+                if duration.as_millis() > 10 {
+                    let steps = plan
+                        .as_ref()
+                        .map(|(nodes, _)| nodes.len())
+                        .unwrap_or_default();
+                    warn!(
+                        "Planning duration for Entity {entity} was {duration:?} for {steps} steps",
+                    );
+                }
+                let plan = plan.map(|(nodes, _cost)| get_effects_from_plan(nodes).collect());
+                send.send(plan).expect("Failed to send plan");
             };
-            #[cfg(not(feature = "compute-pool"))]
-            let receiver = Receiver(make_plan(&state, &actions[..], &goal));
+            thread_pool.spawn(future).detach();
+            receiver
+        };
+        #[cfg(not(feature = "compute-pool"))]
+        let receiver = Receiver(make_plan(&state, &actions[..], &goal));
 
-            commands
-                .entity(entity)
-                .insert((IsPlanning, ComputePlan(receiver)));
-        }
+        commands
+            .entity(entity)
+            .insert((IsPlanning, AsyncPlanReceiver(receiver)));
     }
 }
 
@@ -183,9 +197,9 @@ fn grab_plan_from_task(
 /// This system is responsible for polling active [`ComputePlan`]s and switch the `current_action` if it changed
 /// since last time. It'll add the [`ActionComponent`] as a Component to the same Entity the [`Planner`] is on, and
 /// remove all the others, signalling that [`Action`] is currently active.
-pub fn handle_planner_tasks(
+pub(crate) fn handle_planner_tasks(
     mut commands: Commands,
-    mut query: Query<(Entity, &mut ComputePlan, &mut Planner)>,
+    mut query: Query<(Entity, &mut AsyncPlanReceiver, &mut Planner)>,
 ) -> Result {
     #[cfg_attr(
         feature = "compute-pool",
@@ -196,12 +210,12 @@ pub fn handle_planner_tasks(
     )]
     for (entity, mut task, mut planner) in query.iter_mut() {
         #[cfg(not(feature = "compute-pool"))]
-        let p = grab_plan_from_task(&mut task.0);
+        let plan = grab_plan_from_task(&mut task.0);
 
         #[cfg(feature = "compute-pool")]
-        let p = match task.0.try_recv() {
-            Ok(r) => r,
-            Err(e) => match e {
+        let plan = match task.0.try_recv() {
+            Ok(plan) => plan,
+            Err(err) => match err {
                 crossbeam_channel::TryRecvError::Empty => continue,
                 crossbeam_channel::TryRecvError::Disconnected => {
                     return Err(BevyError::from("Task channel disconnected"));
@@ -209,56 +223,70 @@ pub fn handle_planner_tasks(
             },
         };
 
-        commands.entity(entity).remove::<ComputePlan>();
-        match p {
-            Some((plan, _cost)) => {
-                let effects = get_effects_from_plan(plan);
-
+        commands.entity(entity).try_remove::<AsyncPlanReceiver>();
+        match plan {
+            Some(effects) => {
                 let effect_names: VecDeque<String> =
                     effects.iter().map(|i| i.action.to_string()).collect();
 
                 if planner.current_plan != effect_names {
-                    planner.current_plan = effect_names.clone();
                     debug!(
                         ?effect_names,
                         num_steps = ?effects.len(),
                         "Current plan changed"
                     );
-                }
-
-                match effects.first() {
-                    Some(first_effect) => {
-                        let action_name = first_effect.action.clone();
-
-                        let (found_action, action_component) = planner.actions_map.get(&action_name).unwrap_or_else(|| panic!("Didn't find action {action_name:?} registered in the Planner::actions_map"));
-
-                        if planner.current_action.is_some()
-                            && Some(found_action) != planner.current_action.as_ref()
-                        {
-                            // We used to work towards a different action, so lets remove that one first.
-                            // action_component.remove(&mut commands, entity);
-                            // WARN remove all possible actions in order to avoid race conditions for now
-                            for (_, (_, component)) in planner.actions_map.iter() {
-                                component.remove(&mut commands, entity);
-                            }
-                        }
-
-                        action_component.insert(&mut commands, entity);
-                        planner.current_action = Some(found_action.clone());
-                    }
-                    None => {
-                        if planner.remove_goal_on_no_plan_found {
-                            debug!("Seems there is nothing to be done, removing current goal");
-                            planner.current_goal = None;
-                        }
-                    }
+                    planner.current_plan = effect_names;
                 }
             }
             None => {
                 warn!("Didn't find any plan for our goal in Entity {entity}!");
+                // TODO: should this clear the current plan? And the current action?
             }
         }
-        commands.entity(entity).remove::<IsPlanning>();
+        commands.entity(entity).try_remove::<IsPlanning>();
     }
     Ok(())
+}
+
+pub(crate) fn execute_plan(
+    mut planners: Query<(Entity, &mut Planner)>,
+    planners_with_actions: Query<&dyn ActionComponent>,
+    mut commands: Commands,
+) {
+    for (entity, mut planner) in planners.iter_mut() {
+        if planners_with_actions.contains(entity) {
+            // Already executing an action
+            continue;
+        }
+        match planner.current_plan.pop_front() {
+            Some(action_name) => {
+                let (found_action, action_component) =
+                planner.actions_map.get(&action_name).unwrap_or_else(|| {
+                    panic!(
+                        "Didn't find action {action_name:?} registered in the Planner::actions_map"
+                    )
+                });
+
+                if planner.current_action.is_some()
+                    && Some(found_action) != planner.current_action.as_ref()
+                {
+                    // We used to work towards a different action, so lets remove that one first.
+                    // action_component.remove(&mut commands, entity);
+                    // WARN remove all possible actions in order to avoid race conditions for now
+                    for (_, (_, component)) in planner.actions_map.iter() {
+                        component.remove(&mut commands, entity);
+                    }
+                }
+
+                action_component.insert(&mut commands, entity);
+                planner.current_action = Some(found_action.clone());
+            }
+            None => {
+                if planner.remove_goal_on_no_plan_found {
+                    debug!("Seems there is nothing to be done, removing current goal");
+                    planner.current_goal = None;
+                }
+            }
+        }
+    }
 }

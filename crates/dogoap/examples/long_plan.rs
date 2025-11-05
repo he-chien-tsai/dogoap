@@ -40,7 +40,7 @@ fn main() {
     let actions: Vec<Action> = vec![sleep_action, eat_action, rob_people];
 
     let plan = make_plan(&start, &actions[..], &goal);
-    let effects = get_effects_from_plan(plan.clone().unwrap().0);
+    let effects = get_effects_from_plan(plan.clone().unwrap().0).collect::<Vec<_>>();
     assert_eq!(11, effects.len());
 
     println!("{}", serialize_plan_pretty(plan.clone().unwrap()));

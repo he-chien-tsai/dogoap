@@ -18,10 +18,12 @@ where
     T: Component + Clone + Send + Sync + 'static,
 {
     fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity) {
-        commands.entity(entity_to_insert_to).insert(T::clone(self));
+        commands
+            .entity(entity_to_insert_to)
+            .try_insert(T::clone(self));
     }
     fn remove(&self, commands: &mut Commands, entity_to_remove_from: Entity) {
-        commands.entity(entity_to_remove_from).remove::<T>();
+        commands.entity(entity_to_remove_from).try_remove::<T>();
     }
 }
 

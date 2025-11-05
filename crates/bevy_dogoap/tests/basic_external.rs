@@ -29,9 +29,6 @@ fn startup(mut commands: Commands) {
     let sleep_action = SleepAction::action().add_mutator(IsTired::set(false));
 
     // But we have a handy macro that kind of makes it a lot easier for us!
-
-    let entity = commands.spawn_empty().id();
-
     let (mut planner, components) = create_planner!({
         actions: [
             (EatAction, eat_action),
@@ -42,10 +39,15 @@ fn startup(mut commands: Commands) {
     });
 
     planner.remove_goal_on_no_plan_found = false;
-    planner.always_plan = true;
     planner.current_goal = Some(goal.clone());
 
-    commands.entity(entity).insert((planner, components));
+    commands.spawn((planner, components)).trigger(Plan::from);
+}
+
+fn start_new_plan(mut commands: Commands, planner: Query<Entity, With<Planner>>) {
+    for planner in planner.iter() {
+        commands.entity(planner).trigger(Plan::from);
+    }
 }
 
 fn handle_eat_action(
@@ -123,12 +125,16 @@ mod test {
             Time::<Fixed>::default().timestep(),
         ))
         .add_systems(Startup, startup)
-        .add_systems(FixedUpdate, (handle_eat_action, handle_sleep_action))
+        .add_systems(
+            FixedUpdate,
+            (start_new_plan, handle_eat_action, handle_sleep_action),
+        )
         .add_observer(|_: On<Remove, IsPlanning>, mut commands: Commands| {
             commands.insert_resource(PlannerDone);
         });
 
-        register_components!(app, vec![IsHungry, IsTired]);
+        register_components!(app, [IsHungry, IsTired]);
+        register_actions!(app, [EatAction, SleepAction]);
 
         app.finish();
 

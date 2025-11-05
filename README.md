@@ -50,8 +50,14 @@ fn setup(mut commands: Commands) {
         goals: [goal],
     });
 
+    // register our types
+    register_components!(IsHungry);
+    register_actions!(EatAction);
+
     // Add `planner` + `components` to your Entity, or spawn a new one
-    commands.spawn((Name::new("Planner"), planner, components));
+    commands
+        .spawn((Name::new("Planner"), planner, components))
+        .trigger(Plan::from);
 }
 
 // System for handling EatAction

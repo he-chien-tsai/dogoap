@@ -52,7 +52,7 @@ macro_rules! create_state {
 
 #[macro_export]
 macro_rules! register_components {
-    ($app:ident, vec![$($comp:ty),*]) => {
+    ($app:ident, [$($comp:ty),*]) => {
         $(
             $app.register_component_as::<dyn DatumComponent, $comp>();
         )*
@@ -61,7 +61,7 @@ macro_rules! register_components {
 
 #[macro_export]
 macro_rules! register_actions {
-    ($app:ident, vec![$($comp:ty),*]) => {
+    ($app:ident, [$($comp:ty),*]) => {
         $(
             $app.register_component_as::<dyn ActionComponent, $comp>();
         )*

@@ -102,7 +102,8 @@ fn main() {
     });
 
     // We need to register our components as DatumComponent, otherwise planner won't be able to find them
-    register_components!(app, vec![IsHungry, IsTired]);
+    register_components!(app, [IsHungry, IsTired]);
+    register_actions!(app, [EatAction, SleepAction]);
 
     app.add_systems(Startup, startup);
     app.add_systems(FixedUpdate, (handle_eat_action, handle_sleep_action));

@@ -38,7 +38,9 @@ fn startup(mut commands: Commands) {
     });
 
     // Spawn a entity with our Planner component + the DatumComponents
-    commands.spawn((Name::new("Planner"), planner, components));
+    commands
+        .spawn((Name::new("Planner"), planner, components))
+        .trigger(Plan::from);
 }
 
 // Create our system that handles executing of the EatAction
@@ -59,7 +61,8 @@ fn main() {
 
     // We need to register our components as DatumComponent, otherwise planner won't be able to find them
     // as we're using bevy_trait_query to be able to query for components implementing a trait
-    register_components!(app, vec![IsHungry]);
+    register_components!(app, [IsHungry]);
+    register_actions!(app, [EatAction]);
 
     app.add_plugins(MinimalPlugins)
         // !!! Don't forget to add the plugin ;)

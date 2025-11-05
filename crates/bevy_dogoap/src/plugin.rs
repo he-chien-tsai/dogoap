@@ -33,12 +33,13 @@ impl Plugin for DogoapPlugin {
             self.schedule,
             (
                 planner::update_planner_local_state,
-                planner::create_planner_tasks,
                 planner::handle_planner_tasks,
+                planner::execute_plan,
             )
                 .chain()
                 .in_set(DogoapSystems::RunPlanner),
         )
+        .add_observer(planner::create_planner_tasks)
         .configure_sets(self.schedule, DogoapSystems::RunPlanner);
     }
 }

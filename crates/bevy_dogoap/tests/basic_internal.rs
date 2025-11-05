@@ -102,7 +102,14 @@ fn startup(mut commands: Commands) {
 
     commands
         .entity(entity)
-        .insert((planner, (IsHungry(true), IsTired(true))));
+        .insert((planner, (IsHungry(true), IsTired(true))))
+        .trigger(Plan::from);
+}
+
+fn start_new_plan(mut commands: Commands, planner: Query<Entity, With<Planner>>) {
+    for planner in planner.iter() {
+        commands.entity(planner).trigger(Plan::from);
+    }
 }
 
 fn handle_eat_action(
@@ -194,8 +201,13 @@ mod test {
         ))
         .register_component_as::<dyn DatumComponent, IsHungry>()
         .register_component_as::<dyn DatumComponent, IsTired>()
+        .register_component_as::<dyn ActionComponent, EatAction>()
+        .register_component_as::<dyn ActionComponent, SleepAction>()
         .add_systems(Startup, startup)
-        .add_systems(FixedUpdate, (handle_eat_action, handle_sleep_action))
+        .add_systems(
+            FixedUpdate,
+            (start_new_plan, handle_eat_action, handle_sleep_action),
+        )
         .add_observer(|_: On<Remove, IsPlanning>, mut commands: Commands| {
             commands.insert_resource(PlannerDone);
         });

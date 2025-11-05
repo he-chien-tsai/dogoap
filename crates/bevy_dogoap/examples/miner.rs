@@ -205,8 +205,6 @@ fn startup(mut commands: Commands, window: Single<&Window>) {
 
         // Don't remove the goal if there is no plan found
         planner.remove_goal_on_no_plan_found = false;
-        // Re-calculate our plan constantly
-        planner.always_plan = true;
         // Set current goal to be to acquire gold
         planner.current_goal = Some(gold_goal.clone());
 
@@ -221,6 +219,7 @@ fn startup(mut commands: Commands, window: Single<&Window>) {
                 Miner,
                 planner,
                 components,
+                Visibility::default(),
                 Transform::from_translation(Vec3::ZERO.with_x(50.0 * i as f32)),
                 GlobalTransform::from_translation(Vec3::ZERO.with_x(50.0 * i as f32)),
             ))
@@ -545,13 +544,10 @@ fn handle_eat_action(
 fn handle_sleep_action(
     time: Res<Time>,
     mut commands: Commands,
-    mut query: Query<(Entity, &SleepAction, &mut Energy, &mut Planner)>,
+    mut query: Query<(Entity, &mut Energy), With<SleepAction>>,
 ) {
     let mut rng = rand::rng();
-    for (entity, _action, mut energy, mut planner) in query.iter_mut() {
-        // Stop planning while we sleep, so we regain all the energy we can
-        planner.always_plan = false;
-
+    for (entity, mut energy) in query.iter_mut() {
         let r = rng.random_range(5.0..20.0);
         let val: f64 = r * time.delta_secs_f64();
         energy.0 += val;
@@ -562,9 +558,6 @@ fn handle_sleep_action(
             // after we finish sleeping
             commands.entity(entity).insert(GoToOutsideAction);
             energy.0 = 100.0;
-
-            // Enable continous planning again after we've done sleeping
-            planner.always_plan = true;
         }
     }
 }
@@ -910,6 +903,12 @@ fn draw_gizmos(
     }
 }
 
+fn make_plan(planners: Query<Entity, With<Planner>>, mut commands: Commands) {
+    for planner in planners.iter() {
+        commands.entity(planner).trigger(Plan::from);
+    }
+}
+
 fn main() {
     let mut app = App::new();
 
@@ -926,6 +925,7 @@ fn main() {
     .add_systems(
         FixedUpdate,
         (
+            make_plan.run_if(on_timer(Duration::from_millis(500))),
             handle_go_to_outside_action,
             handle_go_to_house_action,
             handle_go_to_mushroom_action,
@@ -958,8 +958,23 @@ fn main() {
 
     register_components!(
         app,
-        vec![Hunger, Energy, AtLocation, HasOre, HasMetal, GoldAmount]
+        [Hunger, Energy, AtLocation, HasOre, HasMetal, GoldAmount]
     );
-
+    register_actions!(
+        app,
+        [
+            EatAction,
+            SleepAction,
+            MineOreAction,
+            SmeltOreAction,
+            SellMetalAction,
+            GoToOutsideAction,
+            GoToHouseAction,
+            GoToMushroomAction,
+            GoToOreAction,
+            GoToSmelterAction,
+            GoToMerchantAction
+        ]
+    );
     app.run();
 }
