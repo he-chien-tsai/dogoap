@@ -88,8 +88,8 @@ fn is_goal(node: &Node, goal: &Goal) -> bool {
 #[derive(Default, Copy, Clone, Debug)]
 pub enum PlanningStrategy {
     #[default]
-    /// StartToGoal begins with our current state, and finds the most optimal path to the goal, based on the costs
-    /// Might take longer time than GoalToStart, but finds the path with the lowest cost
+    /// `StartToGoal` begins with our current state, and finds the most optimal path to the goal, based on the costs
+    /// Might take longer time than `GoalToStart`, but finds the path with the lowest cost
     StartToGoal,
 }
 
