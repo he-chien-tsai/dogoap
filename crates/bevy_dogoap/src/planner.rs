@@ -172,11 +172,14 @@ pub(crate) fn create_planner_tasks(
     let goals = plan.goals.clone().unwrap_or_else(|| planner.goals.clone());
     let find_plan = move || {
         goals.into_iter().find_map(|goal| {
+            // This is the expensive part.
             let (nodes, cost) = make_plan(&state, &actions[..], &goal)?;
             if nodes.is_empty() {
+                // This goal has realy been achieved
                 None
             } else {
                 let mut effects: Vec<_> = get_effects_from_plan(nodes).collect();
+                // Ensure the current effect is last, so we can simply `.pop()` it
                 effects.reverse();
                 Some(Plan {
                     effects,

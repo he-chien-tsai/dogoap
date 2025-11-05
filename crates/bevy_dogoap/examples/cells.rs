@@ -471,23 +471,13 @@ fn main() {
     )
     .add_systems(
         FixedUpdate,
-        spawn_random_food.run_if(on_timer(Duration::from_millis(100))),
-    )
-    .add_systems(
-        FixedUpdate,
-        over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
-    )
-    .add_systems(
-        FixedUpdate,
-        print_cell_count.run_if(on_timer(Duration::from_millis(1000))),
-    )
-    .add_systems(
-        FixedUpdate,
-        increment_age.run_if(on_timer(Duration::from_millis(1000))),
-    )
-    .add_systems(
-        FixedUpdate,
-        print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
+        (
+            spawn_random_food.run_if(on_timer(Duration::from_millis(100))),
+            over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
+            print_cell_count.run_if(on_timer(Duration::from_millis(1000))),
+            increment_age.run_if(on_timer(Duration::from_millis(1000))),
+            print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
+        ),
     );
 
     register_components!(app, [Hunger, AtFood]);

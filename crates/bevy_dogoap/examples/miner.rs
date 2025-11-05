@@ -927,23 +927,17 @@ fn main() {
             handle_mine_ore_action,
             handle_smelt_ore_action,
             handle_sell_metal_action,
+        )
+            .chain(),
+    )
+    .add_systems(
+        FixedUpdate,
+        (
+            spawn_random_mushroom.run_if(on_timer(Duration::from_secs(5))),
+            spawn_random_ore.run_if(on_timer(Duration::from_secs(5))),
+            over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
+            print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
         ),
-    )
-    .add_systems(
-        FixedUpdate,
-        spawn_random_mushroom.run_if(on_timer(Duration::from_secs(5))),
-    )
-    .add_systems(
-        FixedUpdate,
-        spawn_random_ore.run_if(on_timer(Duration::from_secs(5))),
-    )
-    .add_systems(
-        FixedUpdate,
-        over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
-    )
-    .add_systems(
-        FixedUpdate,
-        print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
     );
 
     register_components!(
