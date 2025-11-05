@@ -83,6 +83,36 @@ fn is_goal(node: &Node, goal: &Goal) -> bool {
     })
 }
 
+/// Currently, only [`PlanningStrategy::StartToGoal`] is supported, which tries to find the chain of
+/// [`Effect`]s that lead to our [`Goal`] state
+#[derive(Default, Copy, Clone, Debug)]
+pub enum PlanningStrategy {
+    #[default]
+    /// StartToGoal begins with our current state, and finds the most optimal path to the goal, based on the costs
+    /// Might take longer time than GoalToStart, but finds the path with the lowest cost
+    StartToGoal,
+}
+
+/// Use [`make_plan`] instead
+pub fn make_plan_with_strategy(
+    strategy: PlanningStrategy,
+    start: &LocalState,
+    actions: &[Action],
+    goal: &Goal,
+) -> Option<(Vec<Node>, usize)> {
+    match strategy {
+        PlanningStrategy::StartToGoal => {
+            let start_node = Node::State(start.clone());
+            pathfinding::directed::astar::astar(
+                &start_node,
+                |node| successors(node, actions).collect::<Vec<_>>().into_iter(),
+                |node| heuristic(node, goal),
+                |node| is_goal(node, goal),
+            )
+        }
+    }
+}
+
 /// Returns a path of [`Node`]s that leads from our start [`LocalState`] to our
 /// [`Goal`] state
 pub fn make_plan(
@@ -91,13 +121,7 @@ pub fn make_plan(
     goal: &Goal,
 ) -> Option<(Vec<Node>, usize)> {
     // Default to using Start -> Goal planning
-    let start_node = Node::State(start.clone());
-    pathfinding::directed::astar::astar(
-        &start_node,
-        |node| successors(node, actions).collect::<Vec<_>>().into_iter(),
-        |node| heuristic(node, goal),
-        |node| is_goal(node, goal),
-    )
+    make_plan_with_strategy(PlanningStrategy::StartToGoal, start, actions, goal)
 }
 
 /// Returns an iterator of all [`Effect`]s from a given plan

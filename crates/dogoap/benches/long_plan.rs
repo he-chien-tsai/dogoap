@@ -1,13 +1,14 @@
 #![expect(missing_docs, reason = "No need for docs in benchmarks")]
 //! Benchmark for the `long_plan` example.
 
-use criterion::{Criterion, criterion_group, criterion_main};
+use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use dogoap::{
+    planner::{PlanningStrategy, make_plan_with_strategy},
     prelude::*,
     simple::{simple_decrement_action, simple_increment_action},
 };
 
-fn long_plan() {
+fn long_plan(planning_strategy: PlanningStrategy) {
     let start = LocalState::new()
         .with_datum("energy", 30_i64)
         .with_datum("hunger", 70_i64)
@@ -40,7 +41,7 @@ fn long_plan() {
 
     let actions: Vec<Action> = vec![sleep_action, eat_action, rob_people];
 
-    let plan = make_plan(&start, &actions[..], &goal);
+    let plan = make_plan_with_strategy(planning_strategy, &start, &actions[..], &goal);
     let effects = get_effects_from_plan(plan.clone().unwrap().0).collect::<Vec<_>>();
 
     assert_eq!(11, effects.len());
@@ -49,7 +50,7 @@ fn long_plan() {
 
 fn bench_start_to_goal_strategy(c: &mut Criterion) {
     c.bench_function("Start To Goal", |b| {
-        b.iter(|| long_plan());
+        b.iter(|| long_plan(black_box(PlanningStrategy::StartToGoal)));
     });
 }
 
