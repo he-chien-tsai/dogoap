@@ -49,7 +49,7 @@ impl fmt::Debug for Planner {
     }
 }
 
-/// When we're not using AsyncComputeTaskPool + Task, we define our own so we can replace less code later
+/// When we're not using `AsyncComputeTaskPool` + `Task`, we define our own so we can replace less code later
 #[cfg(not(feature = "compute-pool"))]
 struct Receiver<T>(T);
 
@@ -193,7 +193,7 @@ pub(crate) fn create_planner_tasks(
         let plan = planner
             .goals
             .iter()
-            .find_map(|goal| make_plan(&state, &actions[..], &goal))
+            .find_map(|goal| make_plan(&state, &actions[..], goal))
             .map(|(nodes, _cost)| get_effects_from_plan(nodes).collect());
         Receiver(plan)
     };
