@@ -38,12 +38,14 @@ fn startup(mut commands: Commands) {
         goals: [goal.clone()],
     });
 
-    commands.spawn((planner, components)).trigger(Plan::from);
+    commands
+        .spawn((planner, components))
+        .trigger(MakePlan::from);
 }
 
 fn start_new_plan(mut commands: Commands, planner: Query<Entity, With<Planner>>) {
     for planner in planner.iter() {
-        commands.entity(planner).trigger(Plan::from);
+        commands.entity(planner).trigger(MakePlan::from);
     }
 }
 

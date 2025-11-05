@@ -893,7 +893,7 @@ fn draw_gizmos(
 
 fn make_plan(planners: Query<Entity, With<Planner>>, mut commands: Commands) {
     for planner in planners.iter() {
-        commands.entity(planner).trigger(Plan::from);
+        commands.entity(planner).trigger(MakePlan::from);
     }
 }
 

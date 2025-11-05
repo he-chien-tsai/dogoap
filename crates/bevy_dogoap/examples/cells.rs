@@ -119,7 +119,7 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
             ));
         })
         // start an initial plan
-        .trigger(Plan::from);
+        .trigger(MakePlan::from);
 }
 
 fn startup(mut commands: Commands, window: Single<&Window>) {
@@ -278,7 +278,7 @@ fn handle_replicate_action(
                     commands.entity(entity).remove::<ReplicateAction>();
                     hunger.0 += 20.0;
                     timers.remove(&entity);
-                    commands.entity(entity).trigger(Plan::from);
+                    commands.entity(entity).trigger(MakePlan::from);
                 } else {
                     hunger.0 += 6.0 * time.delta_secs_f64();
                 }
