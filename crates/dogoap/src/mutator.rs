@@ -1,14 +1,33 @@
 use crate::{datum::Datum, localstate::InternalData};
 
-use bevy_reflect::*;
-
 /// Describes a change in [`LocalState`](crate::localstate::LocalState), based on
 /// the String key + a [`Datum`]
-#[derive(Reflect, Clone, Debug, PartialEq, Hash, Eq)]
+#[derive(Clone, Debug, PartialEq, Hash, Eq)]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub enum Mutator {
-    Set(String, Datum),       // :key, :value
+    /// Set a value for a key
+    Set(String, Datum), // :key, :value
+    /// Increment a value for a key by a given amount
     Increment(String, Datum), // :key, :increment-by
+    /// Decrement a value for a key by a given amount
     Decrement(String, Datum), // :key, :decrement-by
+}
+
+impl Mutator {
+    /// Convenience method for creating a [`Mutator::Set`]
+    pub fn set(key: impl Into<String>, value: impl Into<Datum>) -> Self {
+        Mutator::Set(key.into(), value.into())
+    }
+
+    /// Convenience method for creating a [`Mutator::Increment`]
+    pub fn increment(key: impl Into<String>, value: impl Into<Datum>) -> Self {
+        Mutator::Increment(key.into(), value.into())
+    }
+
+    /// Convenience method for creating a [`Mutator::Decrement`]
+    pub fn decrement(key: impl Into<String>, value: impl Into<Datum>) -> Self {
+        Mutator::Decrement(key.into(), value.into())
+    }
 }
 
 pub fn apply_mutator(data: &mut InternalData, mutator: &Mutator) {
@@ -29,18 +48,22 @@ pub fn apply_mutator(data: &mut InternalData, mutator: &Mutator) {
     }
 }
 
-pub fn print_mutators(mutators: Vec<Mutator>) {
+/// Formats a human-readable version of a list of [`Mutator`]s.
+/// Used in [`format_plan`](crate::prelude::format_plan).
+pub fn format_mutators(mutators: Vec<Mutator>) -> String {
+    let mut output = String::new();
     for mutator in mutators {
         match mutator {
             Mutator::Set(k, v) => {
-                println!("\t\t{} = {}", k, v);
+                output.push_str(&format!("\t\t{k} = {v}\n"));
             }
             Mutator::Increment(k, v) => {
-                println!("\t\t{} + {}", k, v);
+                output.push_str(&format!("\t\t{k} + {v}\n"));
             }
             Mutator::Decrement(k, v) => {
-                println!("\t\t{} - {}", k, v);
+                output.push_str(&format!("\t\t{k} - {v}\n"));
             }
         }
     }
+    output
 }

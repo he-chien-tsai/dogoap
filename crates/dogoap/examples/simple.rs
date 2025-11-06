@@ -1,26 +1,25 @@
+//! This example is the same as examples/basic.rs but using the various `simple_*`
+//! functions to create the data structures instead
+
 use dogoap::prelude::*;
 
-// This example is the same as examples/basic.rs but using the various `simple_*`
-// functions to create the data structures instead
-
 fn main() {
-    let start = LocalState::new().with_datum("is_hungry", Datum::Bool(true));
+    let start = LocalState::new().with_datum("is_hungry", true);
 
-    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::Bool(false)));
+    let goal = Goal::new().with_req("is_hungry", Compare::equals(false));
 
     // NOTE This is the "simple" part, where we create an action with just
     // two strings + a field
-    let eat_action =
-        Action::new("eat").add_mutator(Mutator::Set("is_hungry".to_string(), Datum::Bool(false)));
+    let eat_action = Action::new("eat").with_mutator(Mutator::set("is_hungry", false));
 
     let actions: Vec<Action> = vec![eat_action];
 
     let plan = make_plan(&start, &actions[..], &goal);
 
-    println!("{:#?}", plan);
+    println!("{plan:#?}");
 
-    print_plan(plan.unwrap());
+    println!("{}", format_plan(plan.unwrap()));
 
-    println!("");
+    println!();
     println!("[Everything went as expected!]");
 }

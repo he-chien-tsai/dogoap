@@ -41,7 +41,7 @@ fn setup(mut commands: Commands) {
     let goal = Goal::from_reqs(&[IsHungry::is(false)]);
 
     // Here we declare that the result of perfoming EatAction is that IsHungry gets set to false
-    let eat_action = EatAction::new().add_mutator(IsHungry::set(false));
+    let eat_action = EatAction::action().with_mutator(IsHungry::set(false));
 
     // Creating the planner with everything together gives us Components we can use with Bevy
     let (planner, components) = create_planner!({
@@ -51,19 +51,26 @@ fn setup(mut commands: Commands) {
     });
 
     // Add `planner` + `components` to your Entity, or spawn a new one
-    commands.spawn((Name::new("Planner"), planner, components));
+    commands
+        .spawn((Name::new("Planner"), planner, components))
+        .trigger(MakePlan::from);
 }
 
 // System for handling EatAction
 fn handle_eat_action(
     mut commands: Commands,
-    mut query: Query<(Entity, &EatAction, &mut IsHungry)>,
+    mut query: Query<(Entity, &mut IsHungry), With<EatAction>>,
 ) {
-    for (entity, _eat_action, mut is_hungry) in query.iter_mut() {
+    for (entity, mut is_hungry) in query.iter_mut() {
         is_hungry.0 = false;
         commands.entity(entity).remove::<EatAction>();
     }
 }
+
+
+// register our types
+register_components!(app, IsHungry);
+register_actions!(app, EatAction);
 ```
 
 Once you run this code, the planner will automatically figure out that the entity needs to execute the EatAction in order to set IsHungry to false, and your defined System handles the actual logic of the action.

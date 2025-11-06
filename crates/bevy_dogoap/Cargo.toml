@@ -1,48 +1,38 @@
 [package]
 name = "bevy_dogoap"
-version = "0.5.0"
-edition = "2021"
-description = "bevy_dogoap"
-license = "MIT"
-homepage = "https://github.com/victorb/dogoap"
+version = "0.6.0"
+description = "Integration between dogoap and bevy"
+edition = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
 
 [features]
-default = ["compute-pool", "bevy_winit"]
-compute-pool = []
-bevy_winit = []
+default = ["compute-pool"]
+compute-pool = ["dep:bevy_tasks", "dep:crossbeam-channel"]
 
 [dependencies]
-bevy = { version = "0.16", default-features = false, optional = false, features = [
-    "wayland",
-    "bevy_gizmos",
-    "bevy_text",
-    "bevy_log",
-    "multi_threaded",
-    "default_font",
-    "webgl2",
-    "bevy_window",
-] }
-bevy-trait-query = { version = "0.16.0" }
-dogoap = { path = "../dogoap", version = "0.5.0" }
-dogoap_macros = { path = "../dogoap_macros", version = "0.5.0" }
-rand = "0.8.5"
+bevy_ecs = { workspace = true }
+bevy_app = { workspace = true }
+bevy_log = { workspace = true }
+bevy_reflect = { workspace = true }
+bevy_platform = { workspace = true }
+bevy_tasks = { workspace = true, optional = true }
+bevy-trait-query = { workspace = true }
 
-[[example]]
-name = "bevy_basic"
-path = "examples/bevy_basic.rs"
-required-features = ["bevy_winit"]
+dogoap = { workspace = true, features = ["bevy_reflect"] }
+dogoap_macros = { workspace = true}
+rand = { workspace = true}
+crossbeam-channel = { workspace = true, optional = true}
 
-[[example]]
-name = "cells"
-path = "examples/cells.rs"
-required-features = ["bevy_winit"]
+[dev-dependencies]
+bevy = { workspace = true }
 
-[[example]]
-name = "miner"
-path = "examples/miner.rs"
-required-features = ["bevy_winit"]
+[lints]
+workspace = true
 
-[[example]]
-name = "resman"
-path = "examples/resman.rs"
-required-features = ["bevy_winit"]
+[package.metadata.docs.rs]
+rustdoc-args = ["-Zunstable-options", "--generate-link-to-definition"]
+all-features = true

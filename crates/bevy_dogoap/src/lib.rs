@@ -1,9 +1,11 @@
 #![doc = include_str!("../README.md")]
 
-mod macros;
-mod planner;
-mod plugin;
-mod traits;
+extern crate alloc;
+
+pub mod macros;
+pub mod planner;
+pub mod plugin;
+pub mod traits;
 
 // Public API
 pub mod prelude;

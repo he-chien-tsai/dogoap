@@ -14,8 +14,6 @@ use std::collections::BTreeMap;
 // use indexmap::IndexMap; // 37,873.88 ns/iter
 // use micromap::Map; // 30,480.55 ns/iter
 
-use bevy_reflect::Reflect;
-
 use crate::datum::Datum;
 use crate::goal::Goal;
 
@@ -23,23 +21,28 @@ pub type InternalData = BTreeMap<String, Datum>;
 
 /// This is our internal state that the planner uses to progress in the path finding,
 /// until we reach our [`Goal`]
-#[derive(Reflect, Debug, Clone, Eq, PartialEq, Default)]
+#[derive(Debug, Clone, Eq, PartialEq, Default)]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub struct LocalState {
+    /// The data stored in this local state
     pub data: InternalData,
 }
 
 impl LocalState {
+    /// Create a new empty local state
     pub fn new() -> Self {
         Self {
             data: InternalData::new(),
         }
     }
 
-    pub fn with_datum(mut self, key: &str, value: Datum) -> Self {
-        self.data.insert(key.to_string(), value);
+    /// Create a new local state with a single datum
+    pub fn with_datum(mut self, key: impl Into<String>, value: impl Into<Datum>) -> Self {
+        self.data.insert(key.into(), value.into());
         self
     }
 
+    /// The total distance to the goal in terms of differences between the goal's requirements and the local state's data
     pub fn distance_to_goal(&self, goal: &Goal) -> u64 {
         goal.requirements
             .iter()
@@ -70,22 +73,22 @@ mod tests {
 
     #[test]
     fn test_distance_to_goal() {
-        let state = LocalState::new().with_datum("energy", Datum::I64(50));
-        let goal_state = Goal::new().with_req("energy", Compare::Equals(Datum::I64(50)));
+        let state = LocalState::new().with_datum("energy", 50_i64);
+        let goal_state = Goal::new().with_req("energy", Compare::equals(50_i64));
         let distance = state.distance_to_goal(&goal_state.clone());
         assert_eq!(distance, 0);
 
-        let state = LocalState::new().with_datum("energy", Datum::I64(25));
-        let goal_state = Goal::new().with_req("energy", Compare::Equals(Datum::I64(50)));
+        let state = LocalState::new().with_datum("energy", 25_i64);
+        let goal_state = Goal::new().with_req("energy", Compare::equals(50_i64));
         let distance = state.distance_to_goal(&goal_state.clone());
         assert_eq!(distance, 25);
 
         let state = LocalState::new()
-            .with_datum("energy", Datum::I64(25))
-            .with_datum("hunger", Datum::F64(25.0));
+            .with_datum("energy", 25_i64)
+            .with_datum("hunger", 25.0_f64);
         let goal_state = Goal::new()
-            .with_req("energy", Compare::Equals(Datum::I64(50)))
-            .with_req("hunger", Compare::Equals(Datum::F64(50.0)));
+            .with_req("energy", Compare::equals(50_i64))
+            .with_req("hunger", Compare::equals(50.0_f64));
         let distance = state.distance_to_goal(&goal_state.clone());
         assert_eq!(distance, 50);
     }

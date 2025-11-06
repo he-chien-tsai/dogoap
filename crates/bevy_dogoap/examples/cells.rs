@@ -1,15 +1,15 @@
+//! This is a basic example on how you can use Dogoap while moving your agent around
+
 use bevy::{
     color::palettes::css::*,
-    prelude::*,
     prelude::Camera2d,
+    prelude::*,
     time::common_conditions::on_timer,
     window::{Window, WindowPlugin},
 };
 use bevy_dogoap::prelude::*;
 use rand::Rng;
 use std::{collections::HashMap, time::Duration};
-
-// This is a basic example on how you can use Dogoap while moving your agent around
 
 /// This is our marker components, so we can keep track of the various in-game entities
 #[derive(Component)]
@@ -63,28 +63,28 @@ struct StateDebugText;
 fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
     let goal = Goal::from_reqs(&[IsReplicating::is(true)]);
 
-    let eat_action = EatAction::new()
-        .add_precondition(AtFood::is(true))
-        .add_mutator(Hunger::decrease(10.0))
-        .add_mutator(AtFood::set(true))
+    let eat_action = EatAction::action()
+        .with_precondition(AtFood::is(true))
+        .with_mutator(Hunger::decrease(10.0))
+        .with_mutator(AtFood::set(true))
         .set_cost(1);
 
-    let replicate_action = ReplicateAction::new()
-        .add_precondition(Hunger::is_less(10.0))
-        .add_mutator(IsReplicating::set(true))
-        .add_mutator(Hunger::increase(25.0))
+    let replicate_action = ReplicateAction::action()
+        .with_precondition(Hunger::is_less(10.0))
+        .with_mutator(IsReplicating::set(true))
+        .with_mutator(Hunger::increase(25.0))
         .set_cost(10);
 
-    let go_to_food_action = GoToFoodAction::new()
-        .add_precondition(AtFood::is(false))
-        .add_mutator(AtFood::set(true))
-        .add_mutator(Hunger::increase(1.0))
+    let go_to_food_action = GoToFoodAction::action()
+        .with_precondition(AtFood::is(false))
+        .with_mutator(AtFood::set(true))
+        .with_mutator(Hunger::increase(1.0))
         .set_cost(2);
 
-    let mut rng = rand::thread_rng();
-    let starting_hunger = rng.gen_range(20.0..45.0);
+    let mut rng = rand::rng();
+    let starting_hunger = rng.random_range(20.0..45.0);
 
-    let (mut planner, components) = create_planner!({
+    let (planner, components) = create_planner!({
         actions: [
             (EatAction, eat_action),
             (GoToFoodAction, go_to_food_action),
@@ -93,10 +93,6 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
         state: [Hunger(starting_hunger), AtFood(false), IsReplicating(false)],
         goals: [goal],
     });
-
-    planner.remove_goal_on_no_plan_found = false; // Don't remove the goal
-    planner.always_plan = true; // Re-calculate our plan whenever we can
-    planner.current_goal = Some(goal.clone());
 
     let text_style = TextFont {
         font_size: 12.0,
@@ -118,29 +114,30 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
                 Transform::from_translation(Vec3::new(10.0, -10.0, 10.0)),
                 Text2d("".into()),
                 text_style,
-                bevy::sprite::Anchor::TopLeft,
+                bevy::sprite::Anchor::TOP_LEFT,
                 StateDebugText,
             ));
-        });
+        })
+        // start an initial plan
+        .trigger(MakePlan::from);
 }
 
-fn startup(mut commands: Commands, windows: Query<&Window>) {
-    let window = windows.get_single().expect("Expected only one window! Wth");
+fn startup(mut commands: Commands, window: Single<&Window>) {
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     for _i in 0..1 {
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         spawn_cell(&mut commands, Vec3::from_array([x, y, 1.0]), 128.0);
     }
 
     // Begin with three food
     for _i in 0..30 {
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         commands.spawn((
             Name::new("Food"),
             Food,
@@ -152,18 +149,17 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
 }
 
 fn spawn_random_food(
-    windows: Query<&Window>,
+    window: Single<&Window>,
     mut commands: Commands,
     q_food: Query<Entity, With<Food>>,
 ) {
-    let window = windows.get_single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
     if q_food.iter().len() < 100 {
-        let mut rng = rand::thread_rng();
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let mut rng = rand::rng();
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         commands.spawn((
             Name::new("Food"),
             Food,
@@ -188,13 +184,13 @@ fn handle_move_to(
                     let direction = (destination - transform.translation).normalize();
                     transform.translation += direction * cell.speed * time.delta_secs();
                 } else {
-                    commands.entity(entity).remove::<MoveTo>();
-                    // commands.entity(destination_entity).remove::<BusyObject>();
+                    info!("Reached destination");
+                    commands.entity(entity).try_remove::<MoveTo>();
                 }
             }
             Err(_) => {
                 // Cancel the MoveTo order as the destination no longer exists...
-                commands.entity(entity).remove::<MoveTo>();
+                commands.entity(entity).try_remove::<MoveTo>();
             }
         }
     }
@@ -203,13 +199,13 @@ fn handle_move_to(
 fn handle_go_to_food_action(
     mut commands: Commands,
     mut query: Query<
-        (Entity, &GoToFoodAction, &Transform, &mut AtFood),
-        (Without<Food>, Without<MoveTo>),
+        (Entity, &Transform, &mut AtFood),
+        (With<GoToFoodAction>, Without<Food>, Without<MoveTo>),
     >,
     q_food: Query<(Entity, &Transform), With<Food>>,
     mut targeted_food: Local<HashMap<Entity, Entity>>,
 ) {
-    for (entity, _action, t_entity, mut at_food) in query.iter_mut() {
+    for (entity, t_entity, mut at_food) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_food.iter().map(|(e, t)| (e, *t)).collect();
 
@@ -234,25 +230,21 @@ fn handle_go_to_food_action(
                 }
             }
         }
-
-        let (e_food, t_food, distance) = match selected_food {
-            Some(v) => v,
-            None => {
-                // No available food found, do nothing
-                continue;
-            }
+        let Some((e_food, t_food, distance)) = selected_food else {
+            // No available food found, do nothing
+            continue;
         };
 
         targeted_food.insert(*e_food, entity);
 
         if *distance > 5.0 {
-            // commands.entity(e_food).insert(BusyObject(entity));
             commands.entity(entity).insert(MoveTo(*t_food, *e_food));
         } else {
             // Consume food!
+            info!("Consumed food");
             at_food.0 = true;
             commands.entity(entity).remove::<GoToFoodAction>();
-            targeted_food.remove(&e_food);
+            targeted_food.remove(e_food);
         }
     }
 }
@@ -273,19 +265,11 @@ fn find_closest(origin: Vec3, items: Vec<(Entity, Transform)>) -> Vec<(Entity, V
 
 fn handle_replicate_action(
     mut commands: Commands,
-    mut query: Query<(
-        Entity,
-        &ReplicateAction,
-        &mut IsReplicating,
-        &mut Hunger,
-        &mut Planner,
-        &Cell,
-        &Transform,
-    )>,
+    mut query: Query<(Entity, &mut Hunger, &Cell, &Transform), With<ReplicateAction>>,
     mut timers: Local<HashMap<Entity, Timer>>,
     time: Res<Time>,
 ) {
-    for (entity, _action, _field, mut hunger, mut planner, cell, transform) in query.iter_mut() {
+    for (entity, mut hunger, cell, transform) in query.iter_mut() {
         match timers.get_mut(&entity) {
             Some(progress) => {
                 if progress.tick(time.delta()).just_finished() {
@@ -294,14 +278,13 @@ fn handle_replicate_action(
                     commands.entity(entity).remove::<ReplicateAction>();
                     hunger.0 += 20.0;
                     timers.remove(&entity);
-                    planner.always_plan = true;
+                    commands.entity(entity).trigger(MakePlan::from);
                 } else {
                     hunger.0 += 6.0 * time.delta_secs_f64();
                 }
             }
             None => {
                 timers.insert(entity, Timer::from_seconds(3.0, TimerMode::Once));
-                planner.always_plan = false;
             }
         }
     }
@@ -309,21 +292,20 @@ fn handle_replicate_action(
 
 fn handle_eat_action(
     mut commands: Commands,
-    mut query: Query<(Entity, &EatAction, &Transform, &mut Hunger, &mut AtFood), Without<Food>>,
+    mut query: Query<
+        (Entity, &Transform, &mut Hunger, &mut AtFood),
+        (With<EatAction>, Without<Food>),
+    >,
     q_food: Query<(Entity, &Transform), With<Food>>,
 ) {
-    // println!("Query hits: {}", query.iter().len());
-    for (entity, _action, t_entity, mut hunger, mut at_food) in query.iter_mut() {
+    for (entity, t_entity, mut hunger, mut at_food) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_food.iter().map(|(e, t)| (e, *t)).collect();
         let foods = find_closest(origin, items);
         let food = foods.first();
 
-        // println!("Eating food we found at {:?}", food);
-
-        let (e_food, _t_food, distance) = match food {
-            Some(v) => v,
-            None => panic!("No food could be found, HOW?!"),
+        let Some((e_food, _t_food, distance)) = food else {
+            panic!("No food could be found, HOW?!")
         };
 
         // Make sure we're actually in range to consume this food
@@ -333,19 +315,16 @@ fn handle_eat_action(
             // Before we consume this food, make another query to ensure
             // it's still there, as it could have been consumed by another
             // Cell in the same frame, during the query.iter() loop
-            match q_food.get(*e_food) {
-                Ok(_) => {
-                    hunger.0 -= 10.0;
+            if q_food.contains(*e_food) {
+                hunger.0 -= 10.0;
 
-                    if hunger.0 < 0.0 {
-                        hunger.0 = 0.0;
-                    }
-                    commands.entity(*e_food).despawn_recursive();
+                if hunger.0 < 0.0 {
+                    hunger.0 = 0.0;
                 }
+                commands.entity(*e_food).despawn();
+            } else {
                 // Don't consume as it doesn't exists
-                Err(_) => {
-                    warn!("Tried to consume non-existing food");
-                }
+                warn!("Tried to consume non-existing food");
             }
         }
 
@@ -355,7 +334,7 @@ fn handle_eat_action(
 }
 
 fn print_cell_count(query: Query<Entity, With<Cell>>) {
-    println!("Active Cells: {}", query.iter().len());
+    info!("Active Cells: {}", query.iter().len());
 }
 
 fn over_time_needs_change(
@@ -363,22 +342,21 @@ fn over_time_needs_change(
     time: Res<Time>,
     mut query: Query<(Entity, &mut Hunger, &Transform)>,
 ) {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     for (entity, mut hunger, transform) in query.iter_mut() {
         // Increase hunger
-        let r = rng.gen_range(10.0..20.0);
+        let r = rng.random_range(10.0..20.0);
         let val: f64 = r * time.delta_secs_f64();
         hunger.0 += val;
         if hunger.0 > 100.0 {
-            // hunger.0 = 100.0;
-            commands.entity(entity).despawn_recursive();
+            commands.entity(entity).despawn();
             let translation = transform.translation;
             commands.spawn((
                 DeadCell,
                 Transform::from_translation(translation),
                 GlobalTransform::from_translation(translation),
             ));
-            println!("Removed starving Cell");
+            info!("Removed starving Cell");
         }
     }
 }
@@ -394,7 +372,6 @@ fn print_current_local_state(
     q_child: Query<Entity, With<StateDebugText>>,
     mut text_writer: Text2dWriter,
 ) {
-    // let planner = query.get_single().unwrap();
     for (entity, cell, hunger, children) in query.iter() {
         let age = cell.age;
         let hunger = hunger.0;
@@ -479,7 +456,7 @@ fn main() {
         }),
         ..default()
     }))
-    .add_plugins(DogoapPlugin)
+    .add_plugins(DogoapPlugin::default())
     .add_systems(Startup, startup)
     .add_systems(Update, draw_gizmos)
     .add_systems(
@@ -494,26 +471,17 @@ fn main() {
     )
     .add_systems(
         FixedUpdate,
-        spawn_random_food.run_if(on_timer(Duration::from_millis(100))),
-    )
-    .add_systems(
-        FixedUpdate,
-        over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
-    )
-    .add_systems(
-        FixedUpdate,
-        print_cell_count.run_if(on_timer(Duration::from_millis(1000))),
-    )
-    .add_systems(
-        FixedUpdate,
-        increment_age.run_if(on_timer(Duration::from_millis(1000))),
-    )
-    .add_systems(
-        FixedUpdate,
-        print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
+        (
+            spawn_random_food.run_if(on_timer(Duration::from_millis(100))),
+            over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
+            print_cell_count.run_if(on_timer(Duration::from_millis(1000))),
+            increment_age.run_if(on_timer(Duration::from_millis(1000))),
+            print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
+        ),
     );
 
-    register_components!(app, vec![Hunger, AtFood]);
+    register_components!(app, [Hunger, AtFood]);
+    register_actions!(app, [EatAction, GoToFoodAction, ReplicateAction]);
 
     app.run();
 }

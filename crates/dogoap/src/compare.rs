@@ -1,24 +1,51 @@
 use crate::{action::Action, datum::Datum, localstate::LocalState};
-use bevy_reflect::Reflect;
 use std::hash::{Hash, Hasher};
 
 /// Allows you to Compare [`Datum`] between each other. Used for Preconditions
 /// and in path finding until we reach our goal.
-#[derive(Reflect, Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub enum Compare {
+    /// Checks if two [`Datum`] are equal.
     Equals(Datum),
+    /// Checks if two [`Datum`] are not equal.
     NotEquals(Datum),
+    /// Checks if the first [`Datum`] is greater than or equal to the second [`Datum`].
     GreaterThanEquals(Datum),
+    /// Checks if the first [`Datum`] is less than or equal to the second [`Datum`].
     LessThanEquals(Datum),
 }
 
 impl Compare {
+    /// Convenience method for creating a [`Compare::Equals`]
+    pub fn equals(value: impl Into<Datum>) -> Self {
+        Compare::Equals(value.into())
+    }
+
+    /// Convenience method for creating a [`Compare::NotEquals`]
+    pub fn not_equals(value: impl Into<Datum>) -> Self {
+        Compare::NotEquals(value.into())
+    }
+
+    /// Convenience method for creating a [`Compare::GreaterThanEquals`]
+    pub fn greater_than_equals(value: impl Into<Datum>) -> Self {
+        Compare::GreaterThanEquals(value.into())
+    }
+
+    /// Convenience method for creating a [`Compare::LessThanEquals`]
+    pub fn less_than_equals(value: impl Into<Datum>) -> Self {
+        Compare::LessThanEquals(value.into())
+    }
+}
+
+impl Compare {
+    /// Gets the [`Datum`] that we are comparing against.
     pub fn value(&self) -> Datum {
         match self {
-            Compare::Equals(f) => *f,
-            Compare::NotEquals(f) => *f,
-            Compare::GreaterThanEquals(f) => *f,
-            Compare::LessThanEquals(f) => *f,
+            Compare::Equals(f)
+            | Compare::NotEquals(f)
+            | Compare::GreaterThanEquals(f)
+            | Compare::LessThanEquals(f) => *f,
         }
     }
 }
@@ -62,7 +89,7 @@ pub fn check_preconditions(state: &LocalState, action: &Action) -> bool {
         let state_value = state
             .data
             .get(key)
-            .unwrap_or_else(|| panic!("Couldn't find key {:#?} in LocalState", key));
+            .unwrap_or_else(|| panic!("Couldn't find key {key:#?} in LocalState"));
         compare_values(value, state_value)
     })
 }
@@ -75,52 +102,50 @@ mod test {
 
     #[test]
     fn test_check_preconditions_empty() {
-        let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
+        let state = LocalState::default().with_datum("is_hungry", true);
         let action = Action::default();
 
         let result = check_preconditions(&state, &action);
-        assert_eq!(result, true);
+        assert!(result);
     }
 
     #[test]
     fn test_check_preconditions_true() {
-        let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
-        let action =
-            Action::default().with_precondition("is_hungry", Compare::Equals(Datum::Bool(true)));
+        let state = LocalState::default().with_datum("is_hungry", true);
+        let action = Action::default().with_precondition(("is_hungry", Compare::equals(true)));
 
         let result = check_preconditions(&state, &action);
-        assert_eq!(result, true);
+        assert!(result);
     }
 
     #[test]
     fn test_check_preconditions_false() {
-        let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
-        let action =
-            Action::default().with_precondition("is_hungry", Compare::Equals(Datum::Bool(false)));
+        let state = LocalState::default().with_datum("is_hungry", true);
+        let action = Action::default().with_precondition(("is_hungry", Compare::equals(false)));
 
         let result = check_preconditions(&state, &action);
-        assert_eq!(result, false);
+        assert!(!result);
     }
 
     #[test]
     fn test_check_preconditions_conflicting_preconditions() {
-        let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
+        let state = LocalState::default().with_datum("is_hungry", true);
 
         // False + True
         let action = Action::default()
-            .with_precondition("is_hungry", Compare::Equals(Datum::Bool(false)))
-            .with_precondition("is_hungry", Compare::Equals(Datum::Bool(true)));
+            .with_precondition(("is_hungry", Compare::equals(false)))
+            .with_precondition(("is_hungry", Compare::equals(true)));
 
         let result = check_preconditions(&state, &action);
-        assert_eq!(result, false);
+        assert!(!result);
 
         // True + False
         let action = Action::default()
-            .with_precondition("is_hungry", Compare::Equals(Datum::Bool(true)))
-            .with_precondition("is_hungry", Compare::Equals(Datum::Bool(false)));
+            .with_precondition(("is_hungry", Compare::equals(true)))
+            .with_precondition(("is_hungry", Compare::equals(false)));
 
         let result = check_preconditions(&state, &action);
-        assert_eq!(result, false);
+        assert!(!result);
     }
 
     #[test]
@@ -139,8 +164,7 @@ mod test {
             );
             assert_eq!(
                 ret, expected,
-                "Expected {} to be greater than or equal to {}, but compare_values returned {:#?}",
-                val1, val2, ret
+                "Expected {val1} to be greater than or equal to {val2}, but compare_values returned {ret:#?}"
             );
         }
     }
@@ -161,8 +185,7 @@ mod test {
             );
             assert_eq!(
                 ret, expected,
-                "Expected {} to be less than or equal to {}, but compare_values returned {:#?}",
-                val1, val2, ret
+                "Expected {val1} to be less than or equal to {val2}, but compare_values returned {ret:#?}"
             );
         }
     }
@@ -180,8 +203,7 @@ mod test {
             let ret = compare_values(&Compare::NotEquals(Datum::I64(val1)), &Datum::I64(val2));
             assert_eq!(
                 ret, expected,
-                "Expected {} to not be equal to {}, but compare_values returned {:#?}",
-                val1, val2, ret
+                "Expected {val1} to not be equal to {val2}, but compare_values returned {ret:#?}"
             );
         }
     }

@@ -2,15 +2,42 @@ use std::fmt::Display;
 use std::hash::Hash;
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
-use bevy_reflect::Reflect;
-
 /// Represents one value of either `bool`, `i64`, `f64` or a `Enum` as `usize`.
-#[derive(Reflect, Clone, Debug, PartialOrd, Copy)]
+#[derive(Clone, Debug, PartialOrd, Copy)]
+#[cfg_attr(feature = "bevy_reflect", derive(bevy_reflect::Reflect))]
 pub enum Datum {
+    /// Represents a boolean value.
     Bool(bool),
+    /// Represents an integer value.
     I64(i64),
+    /// Represents a floating-point value.
     F64(f64),
+    /// Represents an enum value cast to `usize`.
     Enum(usize),
+}
+
+impl From<i64> for Datum {
+    fn from(value: i64) -> Self {
+        Datum::I64(value)
+    }
+}
+
+impl From<f64> for Datum {
+    fn from(value: f64) -> Self {
+        Datum::F64(value)
+    }
+}
+
+impl From<bool> for Datum {
+    fn from(value: bool) -> Self {
+        Datum::Bool(value)
+    }
+}
+
+impl From<usize> for Datum {
+    fn from(value: usize) -> Self {
+        Datum::Enum(value)
+    }
 }
 
 impl Hash for Datum {
@@ -40,6 +67,9 @@ impl PartialEq for Datum {
 impl Eq for Datum {}
 
 impl Datum {
+    /// Calculates the difference between two [`Datum`] values.
+    ///
+    /// Panics if the two values are of different types.
     pub fn distance(&self, other: &Datum) -> u64 {
         match (self, other) {
             (Datum::Bool(a), Datum::Bool(b)) => {
@@ -67,32 +97,17 @@ impl Display for Datum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Bool(v) => {
-                write!(f, "Datum:Bool({})", v)
+                write!(f, "Datum:Bool({v})")
             }
             Self::I64(v) => {
-                write!(f, "Datum:I64({})", v)
+                write!(f, "Datum:I64({v})")
             }
             Self::F64(v) => {
-                write!(f, "Datum:F64({})", v)
+                write!(f, "Datum:F64({v})")
             }
             Self::Enum(v) => {
-                write!(f, "Datum:Enum({})", v)
+                write!(f, "Datum:Enum({v})")
             }
-        }
-    }
-}
-
-impl Add for &Datum {
-    type Output = Datum;
-
-    fn add(self, other: &Datum) -> Datum {
-        match (self, other) {
-            (Datum::I64(a), Datum::I64(b)) => Datum::I64(a + b),
-            (Datum::F64(a), Datum::F64(b)) => Datum::F64(a + b),
-            _ => panic!(
-                "Unsupported addition between Datum variants, {:?} - {:?}",
-                self, other
-            ),
         }
     }
 }
@@ -100,23 +115,11 @@ impl Add for &Datum {
 impl Add for Datum {
     type Output = Datum;
 
-    #[allow(clippy::op_ref)]
     fn add(self, other: Datum) -> Datum {
-        &self + &other
-    }
-}
-
-impl Sub for &Datum {
-    type Output = Datum;
-
-    fn sub(self, other: &Datum) -> Datum {
         match (self, other) {
-            (Datum::I64(a), Datum::I64(b)) => Datum::I64(a - b),
-            (Datum::F64(a), Datum::F64(b)) => Datum::F64(a - b),
-            _ => panic!(
-                "Unsupported negation between Datum variants, {:?} - {:?}",
-                self, other
-            ),
+            (Datum::I64(a), Datum::I64(b)) => Datum::I64(a + b),
+            (Datum::F64(a), Datum::F64(b)) => Datum::F64(a + b),
+            _ => panic!("Unsupported addition between Datum variants, {self:?} - {other:?}"),
         }
     }
 }
@@ -124,28 +127,31 @@ impl Sub for &Datum {
 impl Sub for Datum {
     type Output = Datum;
 
-    #[allow(clippy::op_ref)]
     fn sub(self, other: Datum) -> Datum {
-        &self - &other
+        match (self, other) {
+            (Datum::I64(a), Datum::I64(b)) => Datum::I64(a - b),
+            (Datum::F64(a), Datum::F64(b)) => Datum::F64(a - b),
+            _ => panic!("Unsupported negation between Datum variants, {self:?} - {other:?}"),
+        }
     }
 }
 
 impl AddAssign for Datum {
     fn add_assign(&mut self, rhs: Self) {
         match self {
-            Self::I64(ref mut v1) => match rhs {
+            Self::I64(v1) => match rhs {
                 Self::I64(v2) => {
                     *v1 += v2;
                 }
-                _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
+                _ => unimplemented!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
-            Self::F64(ref mut v1) => match rhs {
+            Self::F64(v1) => match rhs {
                 Self::F64(v2) => {
                     *v1 += v2;
                 }
-                _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
+                _ => unimplemented!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
-            _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
+            _ => unimplemented!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
         }
     }
 }
@@ -153,25 +159,27 @@ impl AddAssign for Datum {
 impl SubAssign for Datum {
     fn sub_assign(&mut self, rhs: Self) {
         match self {
-            Self::I64(ref mut v1) => match rhs {
+            Self::I64(v1) => match rhs {
                 Self::I64(v2) => {
                     *v1 -= v2;
                 }
-                _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
+                _ => unimplemented!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
-            Self::F64(ref mut v1) => match rhs {
+            Self::F64(v1) => match rhs {
                 Self::F64(v2) => {
                     *v1 -= v2;
                 }
-                _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
+                _ => unimplemented!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
             },
-            _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
+            _ => unimplemented!("Unimplemented! Tried to remove {self:?} from {rhs:?}"),
         }
     }
 }
 
 #[cfg(test)]
 mod test {
+    use std::cmp::Ordering;
+
     use crate::prelude::*;
     #[test]
     fn test_equality() {
@@ -196,7 +204,10 @@ mod test {
         assert!(Datum::I64(100) >= Datum::I64(10));
         assert!(Datum::I64(1) >= Datum::I64(0));
         assert!(Datum::I64(100) >= Datum::I64(100));
-        assert!(!(Datum::I64(100) >= Datum::I64(101)));
+        assert!(matches!(
+            Datum::I64(100).partial_cmp(&Datum::I64(101)),
+            None | Some(Ordering::Less)
+        ));
 
         // Float
         assert!(Datum::F64(1.1) >= Datum::F64(1.1));

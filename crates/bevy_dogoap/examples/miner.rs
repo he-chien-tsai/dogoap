@@ -1,28 +1,28 @@
+//! A more involved example that resembles a simulation of sorts.
+//! The simulation is of a miner, who wants to earn 3 gold
+//! In order to get gold, they need to sell metal at the Merchant
+//! And in order to get metal, the miner needs to smelt some ore
+//! And in order to get ore, the miner needs to go out, find ore and mine it
+//! And besides those requirements, the miner also have hunger and energy
+//! that constantly change, and they need to sleep and eat in order
+//! to satisfy those needs.
+//!
+//! Put another way, the miner has to:
+//! Eat and Sleep every now and then
+//! Mine to get Ore
+//! Smelt Ore to get Metal
+//! Sell Metal to get Gold
+
 use bevy::{
     color::palettes::css::*,
-    prelude::*,
     prelude::Camera2d,
+    prelude::*,
     time::common_conditions::on_timer,
     window::{Window, WindowPlugin},
 };
 use bevy_dogoap::prelude::*;
 use rand::Rng;
 use std::{collections::HashMap, time::Duration};
-
-// A more involved example that resembles a simulation of sorts.
-// The simulation is of a miner, who wants to earn 3 gold
-// In order to get gold, they need to sell metal at the Merchant
-// And in order to get metal, the miner needs to smelt some ore
-// And in order to get ore, the miner needs to go out, find ore and mine it
-// And besides those requirements, the miner also have hunger and energy
-// that constantly change, and they need to sleep and eat in order
-// to satisfy those needs.
-
-// Put another way, the miner has to:
-// Eat and Sleep every now and then
-// Mine to get Ore
-// Smelt Ore to get Metal
-// Sell Metal to get Gold
 
 #[derive(Clone, Default, Reflect, Copy, EnumDatum)]
 enum Location {
@@ -113,78 +113,78 @@ struct GoldAmount(i64);
 #[derive(Component)]
 struct NeedsText;
 
-fn startup(mut commands: Commands, windows: Query<&Window>) {
+fn startup(mut commands: Commands, window: Single<&Window>) {
     for i in 0..1 {
         let gold_goal = Goal::from_reqs(&[GoldAmount::is(3)]);
 
-        let sleep_action = SleepAction::new()
-            .add_precondition(Energy::is_less(50.0))
-            .add_precondition(AtLocation::is(Location::House))
-            .add_mutator(Energy::increase(100.0))
+        let sleep_action = SleepAction::action()
+            .with_precondition(Energy::is_less(50.0))
+            .with_precondition(AtLocation::is(Location::House))
+            .with_mutator(Energy::increase(100.0))
             .set_cost(1);
 
-        let eat_action = EatAction::new()
-            .add_precondition(Hunger::is_more(50.0))
-            .add_precondition(AtLocation::is(Location::Mushroom))
-            .add_mutator(Hunger::decrease(25.0))
-            .add_mutator(AtLocation::set(Location::Outside))
+        let eat_action = EatAction::action()
+            .with_precondition(Hunger::is_more(50.0))
+            .with_precondition(AtLocation::is(Location::Mushroom))
+            .with_mutator(Hunger::decrease(25.0))
+            .with_mutator(AtLocation::set(Location::Outside))
             .set_cost(2);
 
-        let mine_ore_action = MineOreAction::new()
-            .add_precondition(Energy::is_more(10.0))
-            .add_precondition(Hunger::is_less(75.0))
-            .add_precondition(AtLocation::is(Location::Ore))
-            .add_mutator(HasOre::set(true))
+        let mine_ore_action = MineOreAction::action()
+            .with_precondition(Energy::is_more(10.0))
+            .with_precondition(Hunger::is_less(75.0))
+            .with_precondition(AtLocation::is(Location::Ore))
+            .with_mutator(HasOre::set(true))
             .set_cost(3);
 
-        let smelt_ore_action = SmeltOreAction::new()
-            .add_precondition(Energy::is_more(10.0))
-            .add_precondition(Hunger::is_less(75.0))
-            .add_precondition(AtLocation::is(Location::Smelter))
-            .add_precondition(HasOre::is(true))
-            .add_mutator(HasOre::set(false))
-            .add_mutator(HasMetal::set(true))
+        let smelt_ore_action = SmeltOreAction::action()
+            .with_precondition(Energy::is_more(10.0))
+            .with_precondition(Hunger::is_less(75.0))
+            .with_precondition(AtLocation::is(Location::Smelter))
+            .with_precondition(HasOre::is(true))
+            .with_mutator(HasOre::set(false))
+            .with_mutator(HasMetal::set(true))
             .set_cost(4);
 
-        let sell_metal_action = SellMetalAction::new()
-            .add_precondition(Energy::is_more(10.0))
-            .add_precondition(Hunger::is_less(75.0))
-            .add_precondition(AtLocation::is(Location::Merchant))
-            .add_precondition(HasMetal::is(true))
-            .add_mutator(GoldAmount::increase(1))
-            .add_mutator(HasMetal::set(false))
+        let sell_metal_action = SellMetalAction::action()
+            .with_precondition(Energy::is_more(10.0))
+            .with_precondition(Hunger::is_less(75.0))
+            .with_precondition(AtLocation::is(Location::Merchant))
+            .with_precondition(HasMetal::is(true))
+            .with_mutator(GoldAmount::increase(1))
+            .with_mutator(HasMetal::set(false))
             .set_cost(5);
 
-        let go_to_outside_action = GoToOutsideAction::new()
-            .add_mutator(AtLocation::set(Location::Outside))
+        let go_to_outside_action = GoToOutsideAction::action()
+            .with_mutator(AtLocation::set(Location::Outside))
             .set_cost(1);
 
-        let go_to_house_action = GoToHouseAction::new()
-            .add_precondition(AtLocation::is(Location::Outside))
-            .add_mutator(AtLocation::set(Location::House))
+        let go_to_house_action = GoToHouseAction::action()
+            .with_precondition(AtLocation::is(Location::Outside))
+            .with_mutator(AtLocation::set(Location::House))
             .set_cost(1);
 
-        let go_to_mushroom_action = GoToMushroomAction::new()
-            .add_precondition(AtLocation::is(Location::Outside))
-            .add_mutator(AtLocation::set(Location::Mushroom))
+        let go_to_mushroom_action = GoToMushroomAction::action()
+            .with_precondition(AtLocation::is(Location::Outside))
+            .with_mutator(AtLocation::set(Location::Mushroom))
             .set_cost(2);
 
-        let go_to_ore_action = GoToOreAction::new()
-            .add_precondition(AtLocation::is(Location::Outside))
-            .add_mutator(AtLocation::set(Location::Ore))
+        let go_to_ore_action = GoToOreAction::action()
+            .with_precondition(AtLocation::is(Location::Outside))
+            .with_mutator(AtLocation::set(Location::Ore))
             .set_cost(3);
 
-        let go_to_smelter_action = GoToSmelterAction::new()
-            .add_precondition(AtLocation::is(Location::Outside))
-            .add_mutator(AtLocation::set(Location::Smelter))
+        let go_to_smelter_action = GoToSmelterAction::action()
+            .with_precondition(AtLocation::is(Location::Outside))
+            .with_mutator(AtLocation::set(Location::Smelter))
             .set_cost(4);
 
-        let go_to_merchant_action = GoToMerchantAction::new()
-            .add_precondition(AtLocation::is(Location::Outside))
-            .add_mutator(AtLocation::set(Location::Merchant))
+        let go_to_merchant_action = GoToMerchantAction::action()
+            .with_precondition(AtLocation::is(Location::Outside))
+            .with_mutator(AtLocation::set(Location::Merchant))
             .set_cost(5);
 
-        let (mut planner, components) = create_planner!({
+        let (planner, components) = create_planner!({
             actions: [
                 (EatAction, eat_action),
                 (SleepAction, sleep_action),
@@ -203,13 +203,6 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
             goals: [gold_goal],
         });
 
-        // Don't remove the goal if there is no plan found
-        planner.remove_goal_on_no_plan_found = false;
-        // Re-calculate our plan constantly
-        planner.always_plan = true;
-        // Set current goal to be to acquire gold
-        planner.current_goal = Some(gold_goal.clone());
-
         let text_style = TextFont {
             font_size: 18.0,
             ..default()
@@ -221,6 +214,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
                 Miner,
                 planner,
                 components,
+                Visibility::default(),
                 Transform::from_translation(Vec3::ZERO.with_x(50.0 * i as f32)),
                 GlobalTransform::from_translation(Vec3::ZERO.with_x(50.0 * i as f32)),
             ))
@@ -229,7 +223,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
                     Transform::from_translation(Vec3::new(10.0, -10.0, 10.0)),
                     Text2d("".into()),
                     text_style,
-                    bevy::sprite::Anchor::TopLeft,
+                    bevy::sprite::Anchor::TOP_LEFT,
                     NeedsText,
                 ));
             });
@@ -253,16 +247,15 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
         Transform::from_translation(Vec3::new(-300.0, -50.0, 0.0)),
     ));
 
-    let window = windows.get_single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     // Begin with three mushrooms our miner can eat
     for _i in 0..3 {
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         commands.spawn((
             Name::new("Mushroom"),
             Mushroom,
@@ -272,8 +265,8 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
 
     // Spawn 10 ores we can mine as well
     for _i in 0..10 {
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         commands.spawn((
             Name::new("Ore"),
             Ore,
@@ -287,18 +280,17 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
 
 // Spawn new mushrooms if there are less than 10
 fn spawn_random_mushroom(
-    windows: Query<&Window>,
+    window: Single<&Window>,
     mut commands: Commands,
     mushrooms: Query<Entity, With<Mushroom>>,
 ) {
     if mushrooms.iter().len() < 10 {
-        let window = windows.get_single().expect("Expected only one window! Wth");
         let window_height = window.height() / 2.0;
         let window_width = window.width() / 2.0;
 
-        let mut rng = rand::thread_rng();
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let mut rng = rand::rng();
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         commands.spawn((
             Name::new("Mushroom"),
             Mushroom,
@@ -309,18 +301,17 @@ fn spawn_random_mushroom(
 
 // Spawn new mushrooms if there are less than 10
 fn spawn_random_ore(
-    windows: Query<&Window>,
+    window: Single<&Window>,
     mut commands: Commands,
     ores: Query<Entity, With<Ore>>,
 ) {
     if ores.iter().len() < 10 {
-        let window = windows.get_single().expect("Expected only one window! Wth");
         let window_height = window.height() / 2.0;
         let window_width = window.width() / 2.0;
 
-        let mut rng = rand::thread_rng();
-        let y = rng.gen_range(-window_height..window_height);
-        let x = rng.gen_range(-window_width..window_width);
+        let mut rng = rand::rng();
+        let y = rng.random_range(-window_height..window_height);
+        let x = rng.random_range(-window_width..window_width);
         commands.spawn((
             Name::new("Ore"),
             Ore,
@@ -357,14 +348,13 @@ fn go_to_location<T>(
 fn handle_go_to_house_action(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &GoToHouseAction, &mut Transform, &mut AtLocation), Without<House>>,
-    q_house: Query<&Transform, With<House>>,
+    mut query: Query<
+        (Entity, &mut Transform, &mut AtLocation),
+        (With<GoToHouseAction>, Without<House>),
+    >,
+    t_house: Single<&Transform, With<House>>,
 ) {
-    for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
-        let t_house = q_house
-            .get_single()
-            .expect("There should only be one house!");
-
+    for (entity, mut t_entity, mut at_location) in query.iter_mut() {
         go_to_location::<GoToHouseAction>(
             &mut at_location,
             time.delta_secs(),
@@ -373,7 +363,7 @@ fn handle_go_to_house_action(
             Location::House,
             entity,
             &mut commands,
-        )
+        );
     }
 }
 
@@ -381,16 +371,12 @@ fn handle_go_to_smelter_action(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<
-        (Entity, &GoToSmelterAction, &mut Transform, &mut AtLocation),
-        Without<Smelter>,
+        (Entity, &mut Transform, &mut AtLocation),
+        (With<GoToSmelterAction>, Without<Smelter>),
     >,
-    q_smelter: Query<&Transform, With<Smelter>>,
+    t_smelter: Single<&Transform, With<Smelter>>,
 ) {
-    for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
-        let t_smelter = q_smelter
-            .get_single()
-            .expect("There should only be one smelter!");
-
+    for (entity, mut t_entity, mut at_location) in query.iter_mut() {
         go_to_location::<GoToSmelterAction>(
             &mut at_location,
             time.delta_secs(),
@@ -399,21 +385,20 @@ fn handle_go_to_smelter_action(
             Location::Smelter,
             entity,
             &mut commands,
-        )
+        );
     }
 }
 
 fn handle_go_to_outside_action(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &GoToOutsideAction, &mut Transform, &mut AtLocation), Without<House>>,
-    q_house: Query<&Transform, With<House>>,
+    mut query: Query<
+        (Entity, &mut Transform, &mut AtLocation),
+        (With<GoToOutsideAction>, Without<House>),
+    >,
+    t_house: Single<&Transform, With<House>>,
 ) {
-    for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
-        let t_house = q_house
-            .get_single()
-            .expect("There should only be one house!");
-
+    for (entity, mut t_entity, mut at_location) in query.iter_mut() {
         // Outside is slightly to the left of the house... Fight me
         let offset = Vec3::new(-30.0, 0.0, 0.0);
         let new_pos = t_house.translation + offset;
@@ -426,7 +411,7 @@ fn handle_go_to_outside_action(
             Location::Outside,
             entity,
             &mut commands,
-        )
+        );
     }
 }
 
@@ -434,16 +419,12 @@ fn handle_go_to_merchant_action(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<
-        (Entity, &GoToMerchantAction, &mut Transform, &mut AtLocation),
-        Without<Merchant>,
+        (Entity, &mut Transform, &mut AtLocation),
+        (With<GoToMerchantAction>, Without<Merchant>),
     >,
-    q_destination: Query<&Transform, With<Merchant>>,
+    t_destination: Single<&Transform, With<Merchant>>,
 ) {
-    for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
-        let t_destination = q_destination
-            .get_single()
-            .expect("There should only be one merchant!");
-
+    for (entity, mut t_entity, mut at_location) in query.iter_mut() {
         go_to_location::<GoToMerchantAction>(
             &mut at_location,
             time.delta_secs(),
@@ -452,7 +433,7 @@ fn handle_go_to_merchant_action(
             Location::Merchant,
             entity,
             &mut commands,
-        )
+        );
     }
 }
 
@@ -460,19 +441,16 @@ fn handle_go_to_mushroom_action(
     mut commands: Commands,
     time: Res<Time>,
     mut query: Query<
-        (Entity, &GoToMushroomAction, &mut Transform, &mut AtLocation),
-        Without<Mushroom>,
+        (Entity, &mut Transform, &mut AtLocation),
+        (With<GoToMushroomAction>, Without<Mushroom>),
     >,
     q_mushrooms: Query<(Entity, &Transform), With<Mushroom>>,
 ) {
-    for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
+    for (entity, mut t_entity, mut at_location) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_mushrooms.iter().map(|(e, t)| (e, *t)).collect();
-        let mushroom = find_closest(origin, items);
-
-        let mushroom = match mushroom {
-            Some(v) => v,
-            None => panic!("No mushroom could be found, HOW?!"),
+        let Some(mushroom) = find_closest(origin, items) else {
+            panic!("No mushroom could be found, HOW?!")
         };
 
         go_to_location::<GoToMushroomAction>(
@@ -483,25 +461,26 @@ fn handle_go_to_mushroom_action(
             Location::Mushroom,
             entity,
             &mut commands,
-        )
+        );
     }
 }
 
 fn handle_go_to_ore_action(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &GoToOreAction, &mut Transform, &mut AtLocation), Without<Ore>>,
+    mut query: Query<
+        (Entity, &mut Transform, &mut AtLocation),
+        (With<GoToOreAction>, Without<Ore>),
+    >,
     q_world_resource: Query<(Entity, &Transform), With<Ore>>,
 ) {
-    for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
+    for (entity, mut t_entity, mut at_location) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> =
             q_world_resource.iter().map(|(e, t)| (e, *t)).collect();
-        let closest = find_closest(origin, items);
 
-        let closest = match closest {
-            Some(v) => v,
-            None => panic!("No closest could be found, HOW?!"),
+        let Some(closest) = find_closest(origin, items) else {
+            panic!("No ore could be found, HOW?!")
         };
 
         go_to_location::<GoToOreAction>(
@@ -512,7 +491,7 @@ fn handle_go_to_ore_action(
             Location::Ore,
             entity,
             &mut commands,
-        )
+        );
     }
 }
 
@@ -532,42 +511,29 @@ fn find_closest(origin: Vec3, items: Vec<(Entity, Transform)>) -> Option<(Entity
             }
         }
     }
-    match closest {
-        Some((e, t, _f)) => Some((e, t.translation)),
-        None => None,
-    }
+    closest.map(|(e, t, _f)| (e, t.translation))
 }
 
 fn handle_eat_action(
     mut commands: Commands,
     mut query: Query<
-        (
-            Entity,
-            &EatAction,
-            &mut Transform,
-            &mut Hunger,
-            &mut AtLocation,
-        ),
-        Without<Mushroom>,
+        (Entity, &mut Transform, &mut Hunger, &mut AtLocation),
+        (With<EatAction>, Without<Mushroom>),
     >,
     q_mushrooms: Query<(Entity, &Transform), With<Mushroom>>,
 ) {
-    for (entity, _action, t_entity, mut hunger, mut at_location) in query.iter_mut() {
+    for (entity, t_entity, mut hunger, mut at_location) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_mushrooms.iter().map(|(e, t)| (e, *t)).collect();
-        let mushroom = find_closest(origin, items);
-
-        println!("Eating mushroom we found at {:?}", mushroom);
-
-        let mushroom = match mushroom {
-            Some(v) => v,
-            None => panic!("No mushroom could be found, HOW?!"),
+        let Some(mushroom) = find_closest(origin, items) else {
+            panic!("No mushroom could be found, HOW?!")
         };
+        info!("Eating mushroom we found at {mushroom:?}");
 
         hunger.0 -= 50.0;
 
         commands.entity(entity).remove::<EatAction>();
-        commands.entity(mushroom.0).despawn_recursive();
+        commands.entity(mushroom.0).despawn();
 
         at_location.0 = Location::Outside;
     }
@@ -576,14 +542,11 @@ fn handle_eat_action(
 fn handle_sleep_action(
     time: Res<Time>,
     mut commands: Commands,
-    mut query: Query<(Entity, &SleepAction, &mut Energy, &mut Planner)>,
+    mut query: Query<(Entity, &mut Energy), With<SleepAction>>,
 ) {
-    let mut rng = rand::thread_rng();
-    for (entity, _action, mut energy, mut planner) in query.iter_mut() {
-        // Stop planning while we sleep, so we regain all the energy we can
-        planner.always_plan = false;
-
-        let r = rng.gen_range(5.0..20.0);
+    let mut rng = rand::rng();
+    for (entity, mut energy) in query.iter_mut() {
+        let r = rng.random_range(5.0..20.0);
         let val: f64 = r * time.delta_secs_f64();
         energy.0 += val;
         if energy.0 >= 100.0 {
@@ -593,9 +556,6 @@ fn handle_sleep_action(
             // after we finish sleeping
             commands.entity(entity).insert(GoToOutsideAction);
             energy.0 = 100.0;
-
-            // Enable continous planning again after we've done sleeping
-            planner.always_plan = true;
         }
     }
 }
@@ -635,25 +595,21 @@ fn handle_mine_ore_action(
     mut query: Query<
         (
             Entity,
-            &MineOreAction,
             &mut Transform,
             &mut HasOre,
             &mut AtLocation,
             &mut Energy,
         ),
-        Without<Ore>,
+        (With<MineOreAction>, Without<Ore>),
     >,
     q_ores: Query<(Entity, &Transform), With<Ore>>,
     mut mining_progress: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, _action, t_entity, mut has_ore, mut at_location, mut energy) in query.iter_mut() {
+    for (entity, t_entity, mut has_ore, mut at_location, mut energy) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_ores.iter().map(|(e, t)| (e, *t)).collect();
-        let closest = find_closest(origin, items);
-
-        let closest = match closest {
-            Some(v) => v,
-            None => panic!("No ore could be found, HOW?!"),
+        let Some(closest) = find_closest(origin, items) else {
+            panic!("No ore could be found, HOW?!")
         };
 
         action_with_progress(
@@ -667,18 +623,18 @@ fn handle_mine_ore_action(
                     at_location.0 = Location::Outside;
 
                     commands.entity(entity).remove::<MineOreAction>();
-                    commands.entity(closest.0).despawn_recursive();
+                    commands.entity(closest.0).despawn();
                 } else {
-                    let mut rng = rand::thread_rng();
+                    let mut rng = rand::rng();
 
                     // Mining consumes energy!
-                    let r = rng.gen_range(5.0..10.0);
+                    let r = rng.random_range(5.0..10.0);
                     let val: f64 = r * time.delta_secs_f64();
                     energy.0 -= val;
                     // If we're running out of energy before finishing, stop mining for now
                     if energy.0 <= 0.0 {
                         commands.entity(entity).remove::<MineOreAction>();
-                        energy.0 = 0.0
+                        energy.0 = 0.0;
                     }
                 }
             },
@@ -692,28 +648,24 @@ fn handle_smelt_ore_action(
     mut query: Query<
         (
             Entity,
-            &SmeltOreAction,
             &mut Transform,
             &mut Energy,
             &mut HasOre,
             &mut HasMetal,
             &mut AtLocation,
         ),
-        Without<Smelter>,
+        (With<SmeltOreAction>, Without<Smelter>),
     >,
     q_smelters: Query<(Entity, &Transform), With<Smelter>>,
     mut progress: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, _action, t_entity, mut energy, mut has_ore, mut has_metal, mut at_location) in
+    for (entity, t_entity, mut energy, mut has_ore, mut has_metal, mut at_location) in
         query.iter_mut()
     {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_smelters.iter().map(|(e, t)| (e, *t)).collect();
-        let closest = find_closest(origin, items);
-
-        let closest = match closest {
-            Some(v) => v,
-            None => panic!("No ore could be found, HOW?!"),
+        let Some(closest) = find_closest(origin, items) else {
+            panic!("No ore could be found, HOW?!")
         };
 
         action_with_progress(&mut progress, closest.0, &time, 5.0, |is_completed| {
@@ -726,14 +678,14 @@ fn handle_smelt_ore_action(
 
                 commands.entity(entity).remove::<SmeltOreAction>();
             } else {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 // Smelting consumes even more energy!
-                let r = rng.gen_range(10.0..15.0);
+                let r = rng.random_range(10.0..15.0);
                 let val: f64 = r * time.delta_secs_f64();
                 energy.0 -= val;
                 if energy.0 <= 0.0 {
                     commands.entity(entity).remove::<SmeltOreAction>();
-                    energy.0 = 0.0
+                    energy.0 = 0.0;
                 }
             }
         });
@@ -744,28 +696,22 @@ fn handle_sell_metal_action(
     time: Res<Time>,
     mut commands: Commands,
     mut query: Query<
-        (
-            Entity,
-            &SellMetalAction,
-            &mut Transform,
-            &mut HasMetal,
-            &mut GoldAmount,
-            &mut AtLocation,
-        ),
-        Without<Smelter>,
+        (Entity, &mut HasMetal, &mut GoldAmount, &mut AtLocation),
+        (With<SellMetalAction>, Without<Smelter>),
     >,
     mut progress: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, _action, _t_entity, mut has_metal, mut gold_amount, mut at_location) in
-        query.iter_mut()
-    {
+    for (entity, mut has_metal, mut gold_amount, mut at_location) in query.iter_mut() {
         action_with_progress(&mut progress, entity, &time, 1.0, |is_completed| {
             if is_completed {
-                has_metal.0 = false;
+                if has_metal.0 {
+                    has_metal.0 = false;
 
-                gold_amount.0 += 1;
+                    gold_amount.0 += 1;
+                    info!("Sold metal for gold! We now have {} gold.", gold_amount.0);
 
-                at_location.0 = Location::Outside;
+                    at_location.0 = Location::Outside;
+                }
 
                 commands.entity(entity).remove::<SellMetalAction>();
             } else {
@@ -777,10 +723,10 @@ fn handle_sell_metal_action(
 
 // Increases hunger and decreases energy over time
 fn over_time_needs_change(time: Res<Time>, mut query: Query<(&mut Hunger, &mut Energy)>) {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     for (mut hunger, mut energy) in query.iter_mut() {
         // Increase hunger
-        let r = rng.gen_range(10.0..20.0);
+        let r = rng.random_range(10.0..20.0);
         let val: f64 = r * time.delta_secs_f64();
         hunger.0 += val;
         if hunger.0 > 100.0 {
@@ -788,7 +734,7 @@ fn over_time_needs_change(time: Res<Time>, mut query: Query<(&mut Hunger, &mut E
         }
 
         // Decrease energy
-        let r = rng.gen_range(1.0..10.0);
+        let r = rng.random_range(1.0..10.0);
         let val: f64 = r * time.delta_secs_f64();
         energy.0 -= val;
         if energy.0 < 0.0 {
@@ -893,8 +839,9 @@ fn print_current_local_state(
 
         for child in children.iter() {
             let text = q_child.get(child).unwrap();
-            *text_writer.text(text, 0) =
-                format!("{current_action}\nGold: {gold_amount}\nHunger: {hunger:.0}\nEnergy: {energy:.0}\nHas Ore? {has_ore}\nHas Metal? {has_metal}");
+            *text_writer.text(text, 0) = format!(
+                "{current_action}\nGold: {gold_amount}\nHunger: {hunger:.0}\nEnergy: {energy:.0}\nHas Ore? {has_ore}\nHas Metal? {has_metal}"
+            );
         }
     }
 }
@@ -903,9 +850,9 @@ fn print_current_local_state(
 fn draw_gizmos(
     mut gizmos: Gizmos,
     q_miner: Query<&Transform, With<Miner>>,
-    q_house: Query<&Transform, With<House>>,
-    q_smelter: Query<&Transform, With<Smelter>>,
-    q_merchant: Query<&Transform, With<Merchant>>,
+    t_house: Single<&Transform, With<House>>,
+    t_smelter: Single<&Transform, With<Smelter>>,
+    t_merchant: Single<&Transform, With<Merchant>>,
     q_mushrooms: Query<&Transform, With<Mushroom>>,
     q_ore: Query<&Transform, With<Ore>>,
 ) {
@@ -924,22 +871,18 @@ fn draw_gizmos(
     }
 
     gizmos.rect_2d(
-        q_house.get_single().unwrap().translation.truncate(),
+        t_house.translation.truncate(),
         Vec2::new(40.0, 80.0),
         AQUAMARINE,
     );
 
     gizmos.rect_2d(
-        q_smelter.get_single().unwrap().translation.truncate(),
+        t_smelter.translation.truncate(),
         Vec2::new(30.0, 30.0),
         YELLOW_GREEN,
     );
 
-    gizmos.circle_2d(
-        q_merchant.get_single().unwrap().translation.truncate(),
-        16.,
-        GOLD,
-    );
+    gizmos.circle_2d(t_merchant.translation.truncate(), 16., GOLD);
 
     for mushroom_transform in q_mushrooms.iter() {
         gizmos.circle_2d(mushroom_transform.translation.truncate(), 4., GREEN_YELLOW);
@@ -947,6 +890,12 @@ fn draw_gizmos(
 
     for ore_transform in q_ore.iter() {
         gizmos.circle_2d(ore_transform.translation.truncate(), 4., ROSY_BROWN);
+    }
+}
+
+fn make_plan(planners: Query<Entity, With<Planner>>, mut commands: Commands) {
+    for planner in planners.iter() {
+        commands.entity(planner).trigger(MakePlan::from);
     }
 }
 
@@ -960,12 +909,13 @@ fn main() {
         }),
         ..default()
     }))
-    .add_plugins(DogoapPlugin)
+    .add_plugins(DogoapPlugin::default())
     .add_systems(Startup, startup)
     .add_systems(Update, draw_gizmos)
     .add_systems(
         FixedUpdate,
         (
+            make_plan.run_if(on_timer(Duration::from_millis(500))),
             handle_go_to_outside_action,
             handle_go_to_house_action,
             handle_go_to_mushroom_action,
@@ -977,29 +927,38 @@ fn main() {
             handle_mine_ore_action,
             handle_smelt_ore_action,
             handle_sell_metal_action,
+        )
+            .chain(),
+    )
+    .add_systems(
+        FixedUpdate,
+        (
+            spawn_random_mushroom.run_if(on_timer(Duration::from_secs(5))),
+            spawn_random_ore.run_if(on_timer(Duration::from_secs(5))),
+            over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
+            print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
         ),
-    )
-    .add_systems(
-        FixedUpdate,
-        spawn_random_mushroom.run_if(on_timer(Duration::from_secs(5))),
-    )
-    .add_systems(
-        FixedUpdate,
-        spawn_random_ore.run_if(on_timer(Duration::from_secs(5))),
-    )
-    .add_systems(
-        FixedUpdate,
-        over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
-    )
-    .add_systems(
-        FixedUpdate,
-        print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
     );
 
     register_components!(
         app,
-        vec![Hunger, Energy, AtLocation, HasOre, HasMetal, GoldAmount]
+        [Hunger, Energy, AtLocation, HasOre, HasMetal, GoldAmount]
     );
-
+    register_actions!(
+        app,
+        [
+            EatAction,
+            SleepAction,
+            MineOreAction,
+            SmeltOreAction,
+            SellMetalAction,
+            GoToOutsideAction,
+            GoToHouseAction,
+            GoToMushroomAction,
+            GoToOreAction,
+            GoToSmelterAction,
+            GoToMerchantAction
+        ]
+    );
     app.run();
 }
